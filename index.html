@@ -375,6 +375,42 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
   .pill .lbl{display:none}
   .navb{width:52px;height:52px}
 }
+@media (orientation:landscape) and (max-height:520px){
+  .g-head{padding:8px 16px 0}
+  .g-brand,.ptag{display:none}
+  .g-title{font-size:1.7rem;-webkit-text-stroke-width:5px;margin:0}
+  .g-sub{font-size:.9rem}
+  .strip{--cw:min(190px,46vh)}
+  .pcard{padding:24px 0 4px}
+  .pname{font-size:1.1rem}
+  .g-foot{padding:0 16px 6px;font-size:.85rem}
+  .garrow{width:40px;height:40px}
+  .ribbon-wrap{top:10px;gap:6px}
+  .intro-title{font-size:1.6rem}
+  .intro-sub{font-size:.95rem}
+  .ribbon .tail{font-size:1rem}
+  #reader{grid-template-rows:auto 1fr}
+  .r-head{padding:6px 16px 2px}
+  .r-title{font-size:1.15rem;-webkit-text-stroke-width:4px}
+  .r-count{font-size:1rem}
+  .pill{padding:3px 12px 6px;font-size:1rem}
+  .pill .lbl{display:none}
+  .r-main{place-items:center;padding:2px 16px 8px}
+  .page{width:min(600px,calc(100% - 128px));height:100%}
+  .leaf,.flip{padding:12px 22px 78px}
+  .leaf-head{margin-bottom:2px}
+  .leaf-mini{width:30px}
+  .leaf-pg{font-size:1.1rem}
+  .txt{font-size:1.02rem;line-height:1.7}
+  .the-end{font-size:1.7rem;margin-top:4px}
+  .end-hint{font-size:.9rem}
+  .bunny-slot{width:150px;bottom:-6px}
+  .zzz span{font-size:1.2rem}
+  .r-nav{position:absolute;left:0;right:0;top:50%;translate:0 -50%;justify-content:space-between;padding:0 12px;pointer-events:none;z-index:3}
+  .r-nav>*{pointer-events:auto}
+  .dots{display:none}
+  .navb{width:48px;height:48px}
+}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important}
   .spin{animation:none!important}
@@ -977,7 +1013,7 @@ function buildWorld(st, enterDelay=null){
   if(w.extras.includes('bees')) s+=flyer(true);
   // hero
   const portrait=innerWidth/innerHeight<.8;
-  s+=`<g transform="translate(${(W*(portrait?.72:.8)).toFixed(0)} ${portrait?652:600}) scale(${portrait?1.1:1.35})"><g class="w-hero"><g transform="translate(-60 -114)">${heroSVG(st.hero)}</g></g></g>`;
+  s+=`<g transform="translate(${(W*(portrait?.72:innerWidth/innerHeight>1.8?.9:.8)).toFixed(0)} ${portrait?652:600}) scale(${portrait?1.1:1.35})"><g class="w-hero"><g transform="translate(-60 -114)">${heroSVG(st.hero)}</g></g></g>`;
   s+=`</g>`;
   if(w.extras.includes('petals')) s+=Array.from({length:14},()=>`<g transform="translate(${R(0,W+200).toFixed(0)} 0)"><ellipse class="w-petal" style="animation-duration:${R(8,14).toFixed(1)}s;animation-delay:-${R(0,14).toFixed(1)}s" cx="0" cy="0" rx="7" ry="4.5" fill="#ffc9dc" stroke="#e98fae" stroke-width="1.5"/></g>`).join('');
   s+=`<path class="w-landnight" d="${farD}" fill="#0a0930"/>`;
@@ -1304,8 +1340,12 @@ async function openBook(){
   book.parentElement.style.animation='none';
   book.style.transition='none';
   await book.animate([{transform:'none'},{transform:'scale(1.06,.93) translateY(12px)',offset:.35},{transform:'scale(.96,1.05) translateY(-34px)',offset:.7},{transform:'none'}],{duration:dur(560),easing:'ease-in-out'}).finished;
+  // shrink the open spread so both pages fit on narrow (phone) screens
+  const bw=book.offsetWidth, k=Math.min(1,(innerWidth*.94)/(2*bw),(innerHeight*.8)/book.offsetHeight);
+  const openT=`translateX(-50%) scale(${k.toFixed(3)})`;
+  book.style.transformOrigin='100% 50%';
   cover.animate([{transform:'translateZ(1px) rotateY(0deg)'},{transform:'translateZ(1px) rotateY(178deg)',offset:.82},{transform:'translateZ(1px) rotateY(170deg)'}],{duration:dur(1300),easing:E,fill:'forwards'});
-  book.animate([{transform:'translateX(0)'},{transform:'translateX(-50%)'}],{duration:dur(1300),easing:E,fill:'forwards'});
+  book.animate([{transform:'translateX(0) scale(1)'},{transform:openT}],{duration:dur(1300),easing:E,fill:'forwards'});
   beams.animate([{opacity:0,transform:'scale(.3)'},{opacity:1,transform:'scale(1)'}],{duration:dur(1400),delay:dur(300),easing:'ease-out',fill:'forwards'});
   await wait(700);
   { const r=book.getBoundingClientRect(); fxBook.burst('star',60,(r.left+r.width*.25)*DPR,(r.top+r.height/2)*DPR,{speed:[200,650],scale:.8}); }
@@ -1319,7 +1359,7 @@ async function openBook(){
   book.classList.add('lit');
   { const [x,y]=centerOf(book.querySelector('.pages')); fxBook.burst('star',110,x*DPR,y*DPR,{speed:[300,1100],scale:1}); }
   await wait(420);
-  book.animate([{transform:'translateX(-50%) scale(1) rotate(0)'},{transform:'translateX(0) scale(9) rotate(6deg)'}],{duration:dur(1500),easing:'cubic-bezier(.7,0,.25,1)',fill:'forwards'});
+  book.animate([{transform:openT},{transform:'translateX(400%) scale(9)'}],{duration:dur(1500),easing:'cubic-bezier(.7,0,.25,1)',fill:'forwards'});
   beams.animate([{transform:'scale(1)',opacity:1},{transform:'scale(3) rotate(40deg)',opacity:1}],{duration:dur(1500),easing:'ease-in',fill:'forwards'});
   sky.target=2.4;
   await wait(1050);

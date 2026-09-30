@@ -1,0 +1,1579 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bedtime Stories</title>
+<script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;600;700;800&family=Lalezar&display=swap">
+<style>
+/* Layout: full-screen stages over a living starfield — star title → flying pop-up book → planet carousel → rocket + cloud dive → a cartoon world that stays behind the story and falls asleep with it (RTL, Arabic) */
+:root{
+  --night:#0c0a26;
+  --paper:#fff6e4;
+  --paper-edge:#e9d6ae;
+  --ink:#34245e;
+  --gold:#ffd166;
+  --rose:#ff7eb6;
+  --star:#f4efff;
+  --muted:#c3bbe8;
+  --display:'Lalezar','Baloo Bhaijaan 2','Tahoma',sans-serif;
+  --body:'Baloo Bhaijaan 2','Tahoma','Segoe UI',sans-serif;
+  color-scheme:dark;
+  direction:rtl;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--night);color:var(--star);font-family:var(--body);-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outline-offset:4px;border-radius:12px}
+
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+.nebula{position:fixed;inset:-6%;z-index:0;pointer-events:none;transition:transform 1.2s cubic-bezier(.2,.8,.3,1);
+  transform:translate(calc(var(--mx,0) * -24px),calc(var(--my,0) * -18px));
+  background:
+    radial-gradient(60vmax 40vmax at 12% 18%, rgba(123,79,224,.3), transparent 70%),
+    radial-gradient(50vmax 35vmax at 88% 80%, rgba(255,126,182,.2), transparent 70%),
+    radial-gradient(40vmax 30vmax at 70% 10%, rgba(80,160,255,.16), transparent 70%)}
+
+/* ---------- the cartoon world (shared by intro + reader) ---------- */
+#world{position:fixed;inset:0;z-index:1;opacity:0;visibility:hidden;transition:opacity .8s,visibility 0s linear .8s;pointer-events:none;--s:0}
+#world.on{opacity:1;visibility:visible;transition:opacity .8s}
+#world svg{width:100%;height:100%;display:block}
+#world .sway{transform-box:fill-box;transform-origin:50% 100%;animation:sway 4s ease-in-out infinite}
+#world .w-prop:nth-of-type(2n) .sway{animation-delay:-1.3s;animation-duration:4.6s}
+.w-prop,.w-hero{transform-box:fill-box;transform-origin:50% 100%}
+.w-skynight{opacity:calc(var(--s) * .9);transition:opacity 1.8s}
+.w-stars{opacity:var(--s);transition:opacity 1.8s}
+.w-tw{transform-box:fill-box;transform-origin:center;animation:twinkle 2.6s ease-in-out infinite}
+.w-sun{transform:translateY(calc(var(--s) * 560px));transition:transform 2.2s cubic-bezier(.4,0,.2,1)}
+.w-moon{transform:translateY(calc((1 - var(--s)) * 560px));transition:transform 2.2s cubic-bezier(.4,0,.2,1)}
+.w-rays{transform-box:fill-box;transform-origin:center;animation:rot 30s linear infinite}
+.w-clouds{opacity:calc(1 - var(--s) * .45);transition:opacity 1.8s}
+.w-cloud{animation:drift linear infinite}
+.w-day{opacity:calc(1 - var(--s) * 1.4);transition:opacity 1.6s}
+.w-nl{opacity:calc(var(--s) * 1.3 - .2);transition:opacity 1.6s}
+.w-landnight{opacity:calc(var(--s) * .42);transition:opacity 1.8s}
+.w-ff{animation:ffly 4s ease-in-out infinite}
+.w-wave{animation:waveX 5s linear infinite}
+.w-flyx{animation:flyx linear infinite}
+.w-flyx.rev{animation-direction:reverse}
+.w-flap{transform-box:fill-box;transform-origin:center;animation:flapY .28s ease-in-out infinite alternate}
+.w-bfly{animation:bfly 9s ease-in-out infinite}
+.w-bw{transform-box:fill-box;animation:bw .16s ease-in-out infinite alternate}
+.w-bw.l{transform-origin:100% 50%}.w-bw.r{transform-origin:0 50%}
+.w-bob{transform-box:fill-box;animation:bobY 4s ease-in-out infinite}
+.w-sm{transform-box:fill-box;transform-origin:center;animation:smoke 3.3s ease-out infinite}
+.w-hand{transform-box:fill-box;transform-origin:50% 100%;animation:rot 6s linear infinite}
+.w-hand2{transform-box:fill-box;transform-origin:50% 100%;animation:rot 40s linear infinite}
+.w-beam{transform-box:fill-box;transform-origin:0 50%;animation:beam 3.2s ease-in-out infinite}
+.w-flag{transform-box:fill-box;transform-origin:0 50%;animation:flag .8s ease-in-out infinite alternate}
+.w-bub{transform-box:fill-box;animation:bub 5s ease-in infinite}
+.w-rain{animation:rain .7s linear infinite}
+.w-petal{transform-box:fill-box;animation:petal linear infinite}
+.w-aur{transform-box:fill-box;transform-origin:50% 0;animation:aur 7s ease-in-out infinite alternate}
+.w-glow{animation:glowP 2.6s ease-in-out infinite}
+.w-win{opacity:calc(.55 + var(--s) * .45)}
+
+/* ---------- critters (heroes) ---------- */
+.hero{transform-box:fill-box;transform-origin:50% 100%;animation:heroBob 1.7s ease-in-out infinite}
+.h-arm{transform-box:fill-box;transform-origin:15% 85%;animation:armWave 3.4s ease-in-out infinite}
+.h-wing{transform-box:fill-box;transform-origin:100% 60%;animation:flapL .5s ease-in-out infinite alternate}
+.h-wing.r{transform-origin:0 60%;animation-name:flapR}
+.k-bug .h-wing{animation-duration:.12s}
+.h-tail{transform-box:fill-box;transform-origin:0 100%;animation:tailW 1.4s ease-in-out infinite}
+.h-spout{transform-box:fill-box;transform-origin:50% 100%;animation:spout 2.4s ease-in-out infinite}
+.h-glow{animation:glowP 1.5s ease-in-out infinite}
+.h-bulb{animation:bulb 1s steps(2) infinite}
+.h-tent{transform-box:fill-box;transform-origin:50% 0;animation:tent 1.6s ease-in-out infinite}
+.h-lid{transform-box:fill-box;transform-origin:center;transition:transform .8s}
+.h-open{transform-box:fill-box;transform-origin:center;animation:blink 3.6s infinite}
+.h-shut{opacity:0}
+.hero.sleepy .h-lid{transform:scaleY(.45)}
+.hero.sleep .h-open{opacity:0}
+.hero.sleep .h-shut{opacity:1}
+.hero.sleep{animation:heroSleep 4s ease-in-out infinite}
+.hero.sleep .h-arm,.hero.sleep .h-wing,.hero.sleep .h-tail,.hero.sleep .h-tent{animation-play-state:paused}
+.hero.waving .h-arm{animation:armFast .45s ease-in-out 5}
+
+.scene{position:fixed;inset:0;z-index:2;opacity:0;visibility:hidden;transition:opacity .7s ease,visibility 0s linear .7s}
+.scene.on{opacity:1;visibility:visible;transition:opacity .7s ease}
+.scene.instant{transition:none}
+.fxc{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:block}
+#flash{position:fixed;inset:0;z-index:50;background:#fff;opacity:0;pointer-events:none}
+
+/* ---------- 1. The book ---------- */
+#bookScene{display:grid;place-items:center;cursor:pointer}
+.beams{position:absolute;left:50%;top:50%;width:220vmax;height:220vmax;margin:-110vmax 0 0 -110vmax;opacity:0;pointer-events:none}
+.beams>div{position:absolute;inset:0;border-radius:50%;animation:rot 40s linear infinite;
+  background:repeating-conic-gradient(from 0deg,rgba(255,221,140,.34) 0 5deg,rgba(255,221,140,0) 5deg 15deg);
+  -webkit-mask:radial-gradient(circle,#000 0,#000 8%,transparent 42%);mask:radial-gradient(circle,#000 0,#000 8%,transparent 42%)}
+.book-in{position:relative;visibility:hidden}
+.book-float{position:relative;perspective:2200px;animation:floaty 5s ease-in-out infinite}
+.book{position:relative;width:min(78vw,56vh);aspect-ratio:3/4.15;transform-style:preserve-3d;container-type:inline-size;
+  transform:rotateY(calc(var(--mx,0) * 16deg)) rotateX(calc(var(--my,0) * -10deg));transition:transform .6s cubic-bezier(.2,.8,.3,1)}
+.peek{position:absolute;right:10%;top:0;width:34%;transform:translateY(0);pointer-events:none}
+#bookScene.alive .peek{animation:peek 7s ease-in-out infinite 1s}
+#bookScene.alive .peek .pk-paw{transform-box:fill-box;transform-origin:50% 100%;animation:pkwave 7s ease-in-out infinite 1s}
+.pages{position:absolute;inset:1.5% 0;background:var(--paper);border-radius:12px 4px 4px 12px;
+  box-shadow:-3px 3px 0 var(--paper-edge),-6px 6px 0 #f5e8cb,-9px 9px 0 var(--paper-edge),-12px 12px 0 #efdfbd,0 30px 60px rgba(0,0,0,.55);overflow:hidden}
+.pages::before{content:"";position:absolute;inset:0;background:linear-gradient(270deg,rgba(90,60,20,.22),transparent 12%);z-index:1;pointer-events:none}
+.popup-art{position:absolute;inset:0;width:100%;height:100%}
+.pop{transform-box:fill-box;transform-origin:50% 100%;transform:scale(0)}
+.page-glow{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,#fff 0,rgba(255,230,160,.9) 30%,rgba(255,209,102,0) 70%);opacity:0;transition:opacity 1s ease;pointer-events:none;z-index:2}
+.book.lit .page-glow{opacity:1}
+.leafp{position:absolute;inset:1.5% 0;border-radius:12px 4px 4px 12px;transform-origin:right center;visibility:hidden;
+  background:repeating-linear-gradient(180deg,transparent 0 5.5cqw,rgba(52,36,94,.09) 5.5cqw 6.2cqw) 10cqw 12cqw/calc(100% - 20cqw) calc(100% - 26cqw) no-repeat,
+             linear-gradient(270deg,rgba(90,60,20,.18),transparent 14%),#fffaf0;
+  box-shadow:0 0 0 1px rgba(90,60,20,.12)}
+.cover{position:absolute;inset:0;transform-origin:right center;transform-style:preserve-3d;transform:translateZ(1px)}
+.cover>div{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px 6px 6px 16px;overflow:hidden}
+.cover-front{
+  background:
+    linear-gradient(270deg,rgba(0,0,0,.45) 0,rgba(255,255,255,.08) 3.5%,rgba(0,0,0,.25) 6%,transparent 10%),
+    radial-gradient(120% 90% at 50% 20%,#3b2aa0 0,#241873 55%,#150d4a 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 30px 70px rgba(0,0,0,.6);
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 9cqw 12cqw}
+.cover-front::after{content:"";position:absolute;inset:4.5cqw 8cqw 4.5cqw 4.5cqw;border:.7cqw double var(--gold);border-radius:3cqw;opacity:.75;pointer-events:none}
+.cover-front::before{content:"";position:absolute;inset:-50%;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.18) 50%,transparent 58%);animation:gloss 5s ease-in-out infinite;pointer-events:none}
+.cover-art{position:absolute;left:0;right:0;top:5cqw;width:100%;height:auto}
+.cover-art .tw{animation:twinkle 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.cover-art .tw:nth-of-type(2n){animation-delay:-1.2s}
+.cover-art .tw:nth-of-type(3n){animation-delay:-.6s}
+.cover-moon{animation:rock 5s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 60%}
+.cover-planet{animation:bobY 3.4s ease-in-out infinite;transform-box:fill-box}
+.cover-title{position:relative;font-family:var(--display);font-weight:400;text-align:center;font-size:19cqw;line-height:1.05;margin:0;
+  background:linear-gradient(110deg,#f2a33a 0,#ffd166 30%,#fffbe8 42%,#ffd166 54%,#f2a33a 100%) 0 0/260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 .8cqw 0 #7a3f12) drop-shadow(0 2cqw 3cqw rgba(0,0,0,.5));animation:sheen 3.6s ease-in-out infinite}
+.cover-sub{position:relative;margin:2cqw 0 0;font-size:5.4cqw;color:#e9e0ff;font-weight:700}
+.cover-back{transform:rotateY(180deg);
+  background:radial-gradient(circle at 20% 20%,rgba(255,209,102,.9) 0 .7cqw,transparent 1cqw) 0 0/11cqw 11cqw,
+             radial-gradient(circle at 70% 60%,rgba(255,255,255,.7) 0 .5cqw,transparent .8cqw) 0 0/14cqw 14cqw,#5a3fc6}
+.tap-hint{position:absolute;left:0;right:0;bottom:max(3vh,18px);text-align:center;margin:0;font-family:var(--display);font-size:clamp(1.2rem,2.6vw,1.6rem);color:var(--gold);opacity:0;pointer-events:none}
+.tap-hint span{display:inline-block;animation:pulse 1.8s ease-in-out infinite}
+
+/* ---------- 2. Planet carousel ---------- */
+#galaxy{display:grid;grid-template-rows:auto 1fr auto;grid-template-columns:minmax(0,1fr);overflow:hidden}
+.g-head{position:relative;z-index:2;padding:clamp(16px,3.5vh,36px) 16px 0;text-align:center}
+.g-brand{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);color:var(--gold);font-size:1.15rem}
+.g-title{margin:.15em 0 .1em;font-family:var(--display);font-weight:400;font-size:clamp(2.2rem,6.4vw,3.9rem);line-height:1.15;color:#fff;
+  -webkit-text-stroke:7px #3d2a9c;paint-order:stroke fill;text-shadow:0 5px 0 rgba(0,0,0,.35)}
+.g-title .w{display:inline-block;margin:0 .12em}
+.g-title .w.wave{animation:wave 2.2s ease-in-out infinite;animation-delay:calc(var(--i) * -.3s)}
+.g-sub{margin:0;color:var(--muted);font-size:clamp(1rem,2vw,1.15rem)}
+.strip-wrap{position:relative;z-index:2;min-height:0;min-width:0;display:flex;align-items:center}
+.strip{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;width:100%;height:100%;align-items:center;
+  scroll-snap-type:x proximity;scrollbar-width:none;padding-inline:calc(50% - var(--cw)/2);--cw:min(260px,62vw)}
+.strip::-webkit-scrollbar{display:none}
+.pcard{flex:0 0 var(--cw);scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;padding:34px 0 10px;border-radius:24px}
+.pinner{width:100%;display:flex;flex-direction:column;align-items:center;gap:4px;transition:transform .25s ease-out,opacity .25s;will-change:transform}
+.pwrap{width:86%;position:relative;animation:floaty 6s ease-in-out infinite}
+.pcard:nth-child(2n) .pwrap{animation-delay:-2s}
+.pcard:nth-child(3n) .pwrap{animation-delay:-4s}
+.pwrap::before{content:"";position:absolute;inset:-4%;border-radius:50%;border:3px dashed rgba(255,209,102,.7);opacity:0;transform:scale(.8);transition:opacity .4s,transform .4s}
+.pcard.focus .pwrap::before{opacity:1;transform:scale(1);animation:rot 14s linear infinite}
+.pplanet{transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+.pcard:hover .pplanet{transform:scale(1.07,.95)}
+.pcard:hover .pwrap svg.planet-svg{filter:drop-shadow(0 0 22px rgba(255,255,255,.4))}
+.phero{position:absolute;left:50%;top:-17%;width:38%;translate:-50% 0;z-index:2;transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.phero svg{width:100%;height:auto;display:block;overflow:visible}
+.pcard:hover .phero{transform:translateY(-14px) rotate(-6deg)}
+.pcard.focus .phero .h-arm{animation:armFast .45s ease-in-out infinite}
+.pname{font-family:var(--display);font-size:clamp(1.35rem,2.6vw,1.65rem);line-height:1.25;text-align:center;color:#fff;-webkit-text-stroke:5px var(--pc,#3d2a9c);paint-order:stroke fill;padding-inline:6px;transition:color .3s,transform .3s}
+.pcard.focus .pname{color:var(--gold);transform:scale(1.06)}
+.ptag{font-size:1rem;color:var(--muted);text-align:center}
+.pread{position:absolute;top:8%;left:0;background:var(--gold);color:#3a2300;font-family:var(--display);font-size:.95rem;padding:2px 12px 4px;border-radius:999px;box-shadow:0 3px 0 #a86d10;z-index:3}
+.garrow{position:absolute;top:50%;translate:0 -50%;z-index:3;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.25);display:grid;place-items:center;backdrop-filter:blur(4px);transition:background .2s,transform .2s}
+.garrow:hover{background:rgba(255,255,255,.22);transform:scale(1.1)}
+.garrow.l{left:max(12px,2vw)}.garrow.r{right:max(12px,2vw)}
+.g-foot{position:relative;z-index:2;text-align:center;padding:0 16px max(18px,3vh);color:var(--muted);font-size:1rem}
+.g-foot b{color:var(--gold);font-weight:800}
+.planet-svg{width:100%;height:auto;overflow:visible;display:block}
+.spin{animation:spinx linear infinite}
+.moonlet{animation:bob 4.5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.ufo{position:absolute;top:24%;left:0;width:92px;z-index:1;pointer-events:none;animation:ufo 24s linear infinite 3s;transform:translateX(-140px)}
+.ufo svg{width:100%;height:auto;display:block;animation:ufoWob 1.6s ease-in-out infinite}
+.ufo .ul{animation:bulb .6s steps(2) infinite}
+.ufo .ul:nth-of-type(2n){animation-delay:-.3s}
+.comet{position:absolute;top:62%;left:0;width:120px;z-index:1;pointer-events:none;animation:comet 17s linear infinite 9s;transform:translateX(calc(100vw + 160px))}
+
+/* ---------- 3. Planet intro ---------- */
+#intro{overflow:hidden}
+.space{position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,#1b1450 0,#07061a 70%)}
+.speed{position:absolute;inset:-30%;opacity:0;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,rgba(255,255,255,0) 0 3deg,rgba(255,255,255,.6) 3deg 3.35deg,rgba(255,255,255,0) 3.35deg 9deg);
+  -webkit-mask:radial-gradient(circle,transparent 0,transparent 16%,#000 55%);mask:radial-gradient(circle,transparent 0,transparent 16%,#000 55%);
+  animation:jitter .09s steps(2) infinite}
+.ip-wrap{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.intro-planet{position:relative;z-index:2;width:min(60vw,44vh);transform:scale(0)}
+.tunnel{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.puff{position:absolute;left:50%;top:50%;width:46vmin;height:30vmin;margin:-15vmin 0 0 -23vmin;border-radius:50%;opacity:0;
+  background:radial-gradient(ellipse at 50% 55%,#fff 0,rgba(255,255,255,.95) 40%,rgba(255,255,255,0) 70%)}
+.ribbon-wrap{position:absolute;left:0;right:0;top:max(7vh,20px);z-index:4;display:flex;flex-direction:column;align-items:center;gap:10px;padding:0 16px;pointer-events:none}
+.ribbon{position:relative;opacity:0}
+.ribbon .tail{position:absolute;top:26%;width:2.2em;height:78%;background:var(--c3);border:5px solid #2b1d52;font-size:clamp(1.4rem,4vw,2.4rem)}
+.ribbon .tail.a{right:-1.5em;clip-path:polygon(0 0,100% 0,72% 50%,100% 100%,0 100%)}
+.ribbon .tail.b{left:-1.5em;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,28% 50%)}
+.banner{position:relative;background:var(--c2);border:5px solid #2b1d52;border-radius:22px;padding:0 .7em .15em;box-shadow:0 8px 0 rgba(0,0,0,.28),inset 0 -8px 0 rgba(0,0,0,.12)}
+.intro-title{margin:0;font-family:var(--display);font-weight:400;text-align:center;font-size:clamp(2.1rem,7vw,4.6rem);line-height:1.25;color:#fff}
+.intro-title .w{display:inline-block;margin:0 .1em;-webkit-text-stroke:.14em #2b1d52;paint-order:stroke fill;text-shadow:0 .07em 0 rgba(0,0,0,.3);opacity:0}
+.intro-title .w:nth-child(2n){color:var(--gold)}
+.intro-title .w.wave{animation:wave 1.6s ease-in-out infinite;animation-delay:calc(var(--i) * -.22s)}
+.intro-sub{margin:0;font-family:var(--display);font-size:clamp(1.1rem,2.6vw,1.45rem);background:#fff;color:#2b1d52;padding:.15em 1.1em .35em;border-radius:999px;border:4px solid #2b1d52;box-shadow:0 5px 0 rgba(0,0,0,.25);opacity:0}
+.rocket{position:absolute;left:0;top:0;width:clamp(64px,11vmin,100px);z-index:3;pointer-events:none;opacity:0;will-change:transform}
+.rocket svg{width:100%;height:auto;display:block;overflow:visible}
+.flame{transform-box:view-box;transform-origin:50px 108px;animation:flame .1s ease-in-out infinite alternate}
+.skip{position:absolute;left:16px;bottom:max(16px,3vh);z-index:5;font-family:var(--display);font-size:1.1rem;padding:6px 20px 9px;border-radius:999px;background:rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.55)}
+
+/* ---------- 4. Reader ---------- */
+#reader{display:grid;grid-template-rows:auto 1fr auto;grid-template-columns:minmax(0,1fr);--s:0}
+.r-head{position:relative;z-index:2;display:flex;align-items:center;gap:12px;padding:max(12px,2vh) 16px 8px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 16px 9px;border-radius:999px;background:rgba(20,14,60,.45);border:2px solid rgba(255,255,255,.5);font-family:var(--display);font-size:1.15rem;white-space:nowrap;transition:background .2s,transform .2s;backdrop-filter:blur(4px)}
+.pill:hover{background:rgba(20,14,60,.6);transform:scale(1.05)}
+.r-title{flex:1;min-width:0;text-align:center;font-family:var(--display);font-size:clamp(1.3rem,3vw,1.9rem);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;-webkit-text-stroke:6px var(--c3);paint-order:stroke fill}
+.r-count{font-family:var(--display);color:#fff;white-space:nowrap;min-width:4.5em;text-align:end;font-size:1.2rem;-webkit-text-stroke:5px var(--c3);paint-order:stroke fill}
+.r-main{position:relative;z-index:1;min-height:0;display:grid;place-items:center;padding:6px 16px;perspective:1800px}
+.page{position:relative;width:min(620px,100%);max-height:100%;height:min(100%,540px);background:var(--paper);color:var(--ink);border-radius:18px 6px 6px 18px;
+  box-shadow:-3px 3px 0 var(--paper-edge),-6px 6px 0 #f6ead0,-9px 9px 0 var(--paper-edge),0 24px 60px rgba(0,0,0,.4);transform-style:preserve-3d}
+.page::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(270deg,rgba(110,70,20,.2),transparent 7%);pointer-events:none;z-index:1}
+.leaf,.flip{position:absolute;inset:0;padding:clamp(18px,3.5vw,32px) clamp(22px,5vw,44px) clamp(118px,19vw,140px);overflow:auto;border-radius:inherit}
+.flip{background:var(--paper);z-index:3;transform-origin:right center;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,.25)}
+.flip::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(60,30,10,.28),transparent 60%);pointer-events:none}
+.leaf-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.leaf-mini{width:44px;flex:none;animation:floaty 4s ease-in-out infinite}
+.leaf-mini svg{width:100%;height:auto;display:block;overflow:visible}
+.leaf-pg{font-family:var(--display);color:var(--c3);font-size:1.35rem}
+.leaf-rule{flex:1;height:2px;background:repeating-linear-gradient(90deg,var(--paper-edge) 0 8px,transparent 8px 14px)}
+.txt{margin:0;font-size:clamp(1.2rem,2.4vw,1.42rem);line-height:1.85;font-weight:600;max-width:60ch}
+.wd{display:inline-block;opacity:0;animation:wordIn .6s cubic-bezier(.2,1.3,.4,1) forwards;animation-delay:calc(var(--i) * 30ms + var(--d0,120ms))}
+.wd.big{font-family:var(--display);font-weight:400;font-size:1.7em;line-height:1;color:var(--c2);-webkit-text-stroke:4px var(--c3);paint-order:stroke fill;vertical-align:-.1em}
+.static .wd{animation:none;opacity:1}
+.the-end{margin:12px 0 2px;font-family:var(--display);font-size:clamp(2rem,4.5vw,2.8rem);color:var(--c2);-webkit-text-stroke:6px var(--c3);paint-order:stroke fill;text-align:center;animation:endPop .9s cubic-bezier(.2,1.6,.4,1) both;animation-delay:calc(var(--n) * 30ms + 300ms)}
+.end-hint{margin:0;text-align:center;color:#6b5a93;font-size:1.08rem;font-weight:600;animation:fadeUp .6s ease both;animation-delay:calc(var(--n) * 30ms + 800ms)}
+.static .the-end,.static .end-hint{animation:none}
+.bunny-slot{position:absolute;z-index:5;left:clamp(8px,3vw,26px);bottom:-10px;width:min(270px,56%);cursor:pointer}
+.bunny{width:100%;height:auto;display:block;overflow:visible}
+.bunny .fur{fill:#fffaff;stroke:#3a2a5a;stroke-width:3.5;stroke-linejoin:round}
+.bunny *{transform-box:view-box}
+.b-breathe{transform-origin:140px 142px;animation:breathe calc(2.4s + var(--s) * 2.6s) ease-in-out infinite}
+.b-tail{transform-origin:56px 110px;animation:tail 1.3s ease-in-out infinite}
+.b-head{transform-origin:200px 128px;transform:rotate(calc(var(--s) * 12deg)) translateY(calc(var(--s) * 5px));transition:transform 1.4s cubic-bezier(.4,0,.2,1)}
+.b-ear1{transform-origin:180px 58px;transform:rotate(calc(-8deg - var(--s) * 72deg));transition:transform 1.4s cubic-bezier(.3,1.3,.5,1)}
+.b-ear2{transform-origin:204px 56px;transform:rotate(calc(10deg - var(--s) * 88deg));transition:transform 1.4s cubic-bezier(.3,1.3,.5,1) .08s}
+.b-ein1{transform-origin:180px 58px;animation:earTw 5.5s ease-in-out infinite}
+.b-ein2{transform-origin:204px 56px;animation:earTw 5.5s ease-in-out infinite -2.7s}
+.b-nose{transform-origin:200px 97px;animation:nose 2.4s ease-in-out infinite}
+.b-open{transform-origin:200px 86px;transform:scaleY(calc(1 - var(--s) * .72));transition:transform 1.2s}
+.b-blink{transform-origin:200px 86px;animation:blink 4.2s infinite}
+.b-look{transition:transform .45s cubic-bezier(.3,1.4,.5,1)}
+.b-shut{opacity:0}
+.b-paw{transform-origin:204px 132px}
+.pawwave .b-paw{animation:paw 1.6s ease-in-out}
+.b-blanket{transform:translateX(calc((1 - var(--s)) * -230px));opacity:calc(var(--s) * 1.8 - .3);transition:transform 1.6s cubic-bezier(.4,0,.2,1),opacity 1.2s}
+.b-cap{transform:translateY(calc((1 - var(--s)) * -40px)) rotate(calc((1 - var(--s)) * -20deg));transform-origin:200px 60px;opacity:calc((var(--s) - .45) * 3);transition:transform 1.4s cubic-bezier(.3,1.4,.5,1),opacity 1s}
+.b-yawn{transform-origin:200px 104px;transform:scale(0)}
+.yawn .b-yawn{animation:yawn 1.7s ease-in-out}
+.yawn .b-mouth{animation:hide 1.7s}
+.asleep .b-open{opacity:0}
+.asleep .b-shut{opacity:1}
+.asleep .b-tail,.asleep .b-ein1,.asleep .b-ein2,.asleep .b-nose{animation:none}
+.asleep .bunny{animation:dreamglow 2.6s ease-in-out infinite}
+.wiggle .bunny{animation:wiggle .5s ease-in-out}
+.zzz{position:absolute;left:62%;bottom:88%;pointer-events:none;font-family:var(--display);color:#fff;-webkit-text-stroke:4px #6f5de8;paint-order:stroke fill;direction:ltr}
+.zzz span{position:absolute;opacity:0;font-size:1.6rem}
+.zzz[data-l="1"] span:nth-child(1),.zzz[data-l="2"] span:nth-child(-n+2),.zzz[data-l="3"] span{animation:zfloat 3s ease-in infinite}
+.zzz span:nth-child(2){animation-delay:1s!important;font-size:2rem}
+.zzz span:nth-child(3){animation-delay:2s!important;font-size:2.5rem}
+.bubble{position:absolute;left:44%;bottom:100%;margin-bottom:4px;background:#fff;color:var(--ink);font-weight:700;font-size:1.05rem;padding:4px 14px 7px;border-radius:16px;white-space:nowrap;box-shadow:0 4px 0 rgba(0,0,0,.18);border:3px solid #3a2a5a;opacity:0;transform:translateY(10px) scale(.7);transform-origin:20% 100%;transition:opacity .3s,transform .4s cubic-bezier(.2,1.6,.4,1);pointer-events:none}
+.bubble::after{content:"";position:absolute;left:24px;top:100%;border:9px solid transparent;border-top-color:#3a2a5a}
+.bubble.show{opacity:1;transform:none}
+.r-nav{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:18px;padding:10px 16px max(14px,2.5vh)}
+.navb{width:58px;height:58px;border-radius:50%;background:var(--gold);color:#3a2300;display:grid;place-items:center;box-shadow:0 5px 0 #a86d10;border:3px solid #3a2300;transition:transform .15s,opacity .2s}
+.navb:hover:not(:disabled){transform:scale(1.08)}
+.navb:active{transform:translateY(4px);box-shadow:0 1px 0 #a86d10}
+.navb:disabled{opacity:.35;cursor:default}
+#next:not(:disabled){animation:nudge 2.4s ease-in-out infinite}
+.dots{display:flex;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(20,14,60,.4)}
+.dots i{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.35);transition:background .3s,transform .4s cubic-bezier(.2,1.6,.4,1)}
+.dots i.on{background:var(--gold);transform:scale(1.4)}
+.dots i.done{background:rgba(255,209,102,.7)}
+
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.07)}}
+@keyframes spinx{to{transform:translateX(-160px)}}
+@keyframes bob{0%,100%{transform:translate(0,0)}50%{transform:translate(-6px,8px)}}
+@keyframes bobY{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes rot{to{transform:rotate(360deg)}}
+@keyframes sheen{0%,20%{background-position:100% 0}80%,100%{background-position:0 0}}
+@keyframes gloss{0%,60%{transform:translateX(-40%)}100%{transform:translateX(40%)}}
+@keyframes twinkle{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.55);opacity:.5}}
+@keyframes rock{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+@keyframes peek{0%,50%,100%{transform:translateY(0)}58%,90%{transform:translateY(-62%)}62%{transform:translateY(-68%)}}
+@keyframes pkwave{0%,62%,88%,100%{transform:rotate(0)}66%,74%,82%{transform:rotate(-28deg)}70%,78%{transform:rotate(10deg)}}
+@keyframes jitter{0%{transform:rotate(0)}100%{transform:rotate(2.5deg)}}
+@keyframes flame{from{transform:scale(.85,.75)}to{transform:scale(1.08,1.3)}}
+@keyframes wave{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-10px) rotate(-3deg)}}
+@keyframes wordIn{from{opacity:0;transform:translateY(14px) scale(.8);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+@keyframes endPop{from{opacity:0;transform:scale(.2) rotate(-12deg)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.035)}}
+@keyframes tail{0%,100%{transform:rotate(0)}50%{transform:rotate(-14deg)}}
+@keyframes earTw{0%,86%,100%{transform:rotate(0)}89%{transform:rotate(-12deg)}92%{transform:rotate(6deg)}95%{transform:rotate(-4deg)}}
+@keyframes nose{0%,70%,100%{transform:scale(1)}75%{transform:scale(1.15,.85)}80%{transform:scale(.95,1.1)}85%{transform:scale(1.12,.88)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+@keyframes yawn{0%{transform:scale(0)}30%,70%{transform:scale(1.25)}100%{transform:scale(0)}}
+@keyframes hide{0%,100%{opacity:1}15%,85%{opacity:0}}
+@keyframes paw{0%,100%{transform:none}18%{transform:rotate(-72deg)}32%{transform:rotate(-48deg)}46%{transform:rotate(-74deg)}60%{transform:rotate(-48deg)}76%{transform:rotate(-70deg)}}
+@keyframes zfloat{0%{opacity:0;transform:translate(0,0) rotate(-10deg)}20%{opacity:1}100%{opacity:0;transform:translate(40px,-80px) rotate(12deg)}}
+@keyframes dreamglow{0%,100%{filter:drop-shadow(0 0 0 rgba(255,209,102,0))}50%{filter:drop-shadow(0 0 14px rgba(255,209,102,.9))}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+@keyframes nudge{0%,80%,100%{translate:0 0}85%{translate:-6px 0}90%{translate:0 0}95%{translate:-4px 0}}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes drift{from{transform:translateX(-320px)}to{transform:translateX(var(--dw))}}
+@keyframes flyx{from{transform:translateX(-200px)}to{transform:translateX(var(--dw))}}
+@keyframes ffly{0%,100%{transform:translate(0,0);opacity:.25}50%{transform:translate(14px,-18px);opacity:1}}
+@keyframes waveX{to{transform:translateX(-100px)}}
+@keyframes flapY{to{transform:scaleY(-.5)}}
+@keyframes bfly{0%,100%{transform:translate(0,0)}25%{transform:translate(60px,-44px)}50%{transform:translate(120px,-6px)}75%{transform:translate(60px,26px)}}
+@keyframes bw{to{transform:scaleX(.25)}}
+@keyframes smoke{0%{transform:translate(0,0) scale(.4);opacity:0}20%{opacity:.85}100%{transform:translate(22px,-90px) scale(1.7);opacity:0}}
+@keyframes beam{0%,100%{transform:scaleX(1);opacity:.85}50%{transform:scaleX(-1);opacity:.55}}
+@keyframes flag{to{transform:skewY(12deg) scaleX(.82)}}
+@keyframes bub{0%{transform:translateY(0);opacity:0}15%{opacity:.85}100%{transform:translateY(-300px);opacity:0}}
+@keyframes rain{from{transform:translateY(-6px);opacity:1}to{transform:translateY(46px);opacity:0}}
+@keyframes petal{from{transform:translate(0,-40px) rotate(0)}to{transform:translate(-280px,760px) rotate(620deg)}}
+@keyframes aur{from{transform:scaleY(.8) translateX(-40px)}to{transform:scaleY(1.2) translateX(40px)}}
+@keyframes glowP{0%,100%{opacity:.3}50%{opacity:.85}}
+@keyframes heroBob{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-5px) scale(.97,1.03)}}
+@keyframes heroSleep{0%,100%{transform:rotate(-7deg) scale(1,1)}50%{transform:rotate(-7deg) scale(1.03,.97)}}
+@keyframes armWave{0%,50%,100%{transform:rotate(0)}58%{transform:rotate(-45deg)}66%{transform:rotate(-15deg)}74%{transform:rotate(-45deg)}82%{transform:rotate(0)}}
+@keyframes armFast{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(-55deg)}}
+@keyframes flapL{from{transform:rotate(0)}to{transform:rotate(18deg)}}
+@keyframes flapR{from{transform:rotate(0)}to{transform:rotate(-18deg)}}
+@keyframes tailW{0%,100%{transform:rotate(0)}50%{transform:rotate(-12deg)}}
+@keyframes spout{0%,55%,100%{transform:scale(.2);opacity:0}68%{transform:scale(1.1);opacity:1}88%{transform:scale(1);opacity:0}}
+@keyframes bulb{50%{fill:#ffd166}}
+@keyframes tent{0%,100%{transform:skewX(0)}50%{transform:skewX(10deg)}}
+@keyframes ufo{0%{transform:translate(-140px,0)}50%{transform:translate(50vw,-30px)}100%{transform:translate(calc(100vw + 140px),10px)}}
+@keyframes ufoWob{0%,100%{transform:rotate(-6deg) translateY(0)}50%{transform:rotate(6deg) translateY(-8px)}}
+@keyframes comet{0%{transform:translate(calc(100vw + 160px),0) rotate(-12deg)}100%{transform:translate(-200px,-26vh) rotate(-12deg)}}
+
+@media (max-width:560px){
+  .garrow{width:42px;height:42px}
+  .r-count{min-width:0}
+  .pill .lbl{display:none}
+  .navb{width:52px;height:52px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important}
+  .spin{animation:none!important}
+}
+</style>
+</head>
+<body style="margin:0">
+
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="nebula" aria-hidden="true"></div>
+<div id="world" aria-hidden="true"></div>
+
+<!-- 1. BOOK -->
+<section id="bookScene" class="scene on" aria-label="غلاف الكتاب">
+  <div class="beams" id="beams" aria-hidden="true"><div></div></div>
+  <canvas class="fxc" id="fxBook" aria-hidden="true"></canvas>
+  <div class="book-in" id="bookIn">
+    <div class="book-float">
+      <svg class="peek" viewBox="0 0 120 110" aria-hidden="true">
+        <g fill="#fffaff" stroke="#3a2a5a" stroke-width="3.5" stroke-linejoin="round">
+          <ellipse cx="44" cy="30" rx="11" ry="30" transform="rotate(-12 44 30)"/><ellipse cx="76" cy="30" rx="11" ry="30" transform="rotate(12 76 30)"/>
+        </g>
+        <ellipse cx="44" cy="32" rx="5" ry="20" fill="#ffb3cf" transform="rotate(-12 44 32)"/><ellipse cx="76" cy="32" rx="5" ry="20" fill="#ffb3cf" transform="rotate(12 76 32)"/>
+        <circle cx="60" cy="74" r="34" fill="#fffaff" stroke="#3a2a5a" stroke-width="3.5"/>
+        <ellipse cx="48" cy="70" rx="4.5" ry="6" fill="#3a2a5a"/><ellipse cx="72" cy="70" rx="4.5" ry="6" fill="#3a2a5a"/>
+        <circle cx="49.5" cy="67.5" r="1.8" fill="#fff"/><circle cx="73.5" cy="67.5" r="1.8" fill="#fff"/>
+        <ellipse cx="40" cy="82" rx="6" ry="3.5" fill="#ffb3cf" opacity=".8"/><ellipse cx="80" cy="82" rx="6" ry="3.5" fill="#ffb3cf" opacity=".8"/>
+        <path d="M56 79h8l-4 4z" fill="#ff7fa8"/><path d="M54 87q6 5 12 0" fill="none" stroke="#3a2a5a" stroke-width="2.6" stroke-linecap="round"/>
+        <ellipse cx="34" cy="104" rx="12" ry="8" fill="#fffaff" stroke="#3a2a5a" stroke-width="3.5"/>
+        <g class="pk-paw"><ellipse cx="86" cy="104" rx="12" ry="8" fill="#fffaff" stroke="#3a2a5a" stroke-width="3.5"/></g>
+      </svg>
+      <div class="book" id="book" role="button" tabindex="0" aria-label="افتح كتاب حكايات قبل النوم">
+        <div class="pages">
+          <svg class="popup-art" id="popArt" viewBox="0 0 300 415" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+          <div class="page-glow"></div>
+        </div>
+        <div class="leafp"></div><div class="leafp"></div><div class="leafp"></div><div class="leafp"></div><div class="leafp"></div><div class="leafp"></div>
+        <div class="cover" id="cover">
+          <div class="cover-front">
+            <svg class="cover-art" viewBox="0 0 300 250" aria-hidden="true">
+              <defs><linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2b8"/><stop offset="1" stop-color="#f0a334"/></linearGradient></defs>
+              <g class="cover-moon">
+                <path d="M175 40a70 70 0 1 0 55 113a58 58 0 1 1-55-113z" fill="url(#gold)" stroke="#7a3f12" stroke-width="3"/>
+                <path d="M142 112q6 5 12 0M122 124q6 5 12 0" stroke="#7a3f12" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <path d="M150 58q30-30 70-18q-18 6-14 28z" fill="#ff7eb6" stroke="#7a3f12" stroke-width="3" stroke-linejoin="round"/>
+                <circle cx="222" cy="39" r="8" fill="#fff" stroke="#7a3f12" stroke-width="3"/>
+              </g>
+              <g fill="url(#gold)">
+                <path class="tw" d="M60 50l4 10 10 1-8 6 3 10-9-6-9 6 3-10-8-6 10-1z"/>
+                <path class="tw" d="M250 110l3 7 7 1-5 4 2 7-7-4-6 4 2-7-5-4 7-1z"/>
+                <path class="tw" d="M40 150l2.5 6 6 .5-4.5 4 1.5 6-5.5-3.5-5.5 3.5 1.5-6-4.5-4 6-.5z"/>
+                <circle class="tw" cx="100" cy="30" r="3"/><circle class="tw" cx="265" cy="60" r="2.5"/><circle class="tw" cx="30" cy="100" r="2"/><circle class="tw" cx="270" cy="170" r="3"/><circle class="tw" cx="210" cy="200" r="2"/>
+              </g>
+              <g class="cover-planet"><circle cx="255" cy="215" r="14" fill="#ff7eb6" stroke="#7a3f12" stroke-width="3"/>
+              <ellipse cx="255" cy="215" rx="24" ry="6" fill="none" stroke="#ffd166" stroke-width="3" transform="rotate(-18 255 215)"/></g>
+              <g class="cover-planet" style="animation-delay:-1.7s"><circle cx="55" cy="205" r="10" fill="#7fe7d0" stroke="#7a3f12" stroke-width="3"/></g>
+            </svg>
+            <h1 class="cover-title">حكايات قبل النوم</h1>
+            <p class="cover-sub">قصص من كواكب بعيدة</p>
+          </div>
+          <div class="cover-back"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <canvas class="fxc" id="fxTitle" aria-hidden="true"></canvas>
+  <p class="tap-hint" id="tapHint"><span>المس الكتاب لتفتحه</span></p>
+</section>
+
+<!-- 2. GALAXY -->
+<section id="galaxy" class="scene" aria-label="اختر كوكبًا">
+  <div class="ufo" aria-hidden="true"><svg viewBox="0 0 120 80">
+    <path d="M40 34 Q60 -4 80 34Z" fill="rgba(160,230,255,.55)" stroke="#2b1d52" stroke-width="3"/>
+    <circle cx="60" cy="24" r="9" fill="#8fe07f" stroke="#2b1d52" stroke-width="2.5"/><circle cx="57" cy="22" r="2" fill="#2b1d52"/><circle cx="64" cy="22" r="2" fill="#2b1d52"/>
+    <ellipse cx="60" cy="40" rx="50" ry="14" fill="#b18cff" stroke="#2b1d52" stroke-width="3"/>
+    <circle class="ul" cx="30" cy="42" r="4" fill="#fff"/><circle class="ul" cx="48" cy="46" r="4" fill="#fff"/><circle class="ul" cx="72" cy="46" r="4" fill="#fff"/><circle class="ul" cx="90" cy="42" r="4" fill="#fff"/>
+    <path d="M44 54 L30 80 H90 L76 54Z" fill="rgba(255,240,160,.25)"/></svg></div>
+  <div class="comet" aria-hidden="true"><svg viewBox="0 0 120 40"><defs><linearGradient id="ctail" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#7fd4ff" stop-opacity="0"/></linearGradient></defs>
+    <path d="M14 20 L118 6 L118 34Z" fill="url(#ctail)"/><circle cx="16" cy="20" r="10" fill="#fff6c9" stroke="#2b1d52" stroke-width="3"/><path d="M12 19q2 2 4 0M18 19q2 2 4 0" fill="none" stroke="#2b1d52" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+  <header class="g-head">
+    <div class="g-brand" id="gBrand"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2a10 10 0 1 0 8 15A8 8 0 1 1 14 2z" fill="#ffd166"/></svg>حكايات قبل النوم</div>
+    <h2 class="g-title" id="gTitle">أيّ كوكب نزور الليلة؟</h2>
+    <p class="g-sub" id="gSub">حرّك الكواكب، والمس كوكبًا لتطير إليه</p>
+  </header>
+  <div class="strip-wrap">
+    <button class="garrow r" id="gr" aria-label="الكوكب السابق"><svg width="22" height="22" viewBox="0 0 24 24"><path d="m9 4 8 8-8 8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="strip" id="strip"></div>
+    <button class="garrow l" id="gl" aria-label="الكوكب التالي"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M15 4 7 12l8 8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+  <p class="g-foot" id="gfoot"></p>
+</section>
+
+<!-- 3. PLANET INTRO -->
+<section id="intro" class="scene" aria-live="polite">
+  <div class="space" id="space"></div>
+  <div class="speed" id="speed" aria-hidden="true"></div>
+  <div class="ip-wrap"><div class="intro-planet" id="introPlanet"></div></div>
+  <canvas class="fxc" id="fxIntro" aria-hidden="true"></canvas>
+  <div class="tunnel" id="tunnel" aria-hidden="true"></div>
+  <div class="ribbon-wrap">
+    <div class="ribbon" id="ribbon"><span class="tail a"></span><span class="tail b"></span><div class="banner"><h2 class="intro-title" id="introTitle"></h2></div></div>
+    <p class="intro-sub" id="introSub"></p>
+  </div>
+  <div class="rocket" id="rocket" aria-hidden="true">
+    <svg viewBox="0 0 100 150">
+      <g class="flame"><path d="M34 106Q50 156 66 106Z" fill="#ff9f43"/><path d="M40 106Q50 142 60 106Z" fill="#ffd166"/><path d="M45 106Q50 128 55 106Z" fill="#fff6c9"/></g>
+      <path d="M30 76 8 108l24-5Z" fill="#ff5b7f" stroke="#2b1d52" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M70 76 92 108l-24-5Z" fill="#ff5b7f" stroke="#2b1d52" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M50 4C76 22 78 70 69 108H31C22 70 24 22 50 4Z" fill="#fff" stroke="#2b1d52" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M50 4C63 13 69 25 71 34H29C31 25 37 13 50 4Z" fill="#ff5b7f" stroke="#2b1d52" stroke-width="4" stroke-linejoin="round"/>
+      <circle cx="50" cy="62" r="14" fill="#7fd4ff" stroke="#2b1d52" stroke-width="4"/>
+      <ellipse cx="45" cy="52" rx="3" ry="7" fill="#fff" stroke="#2b1d52" stroke-width="1.5"/><ellipse cx="55" cy="52" rx="3" ry="7" fill="#fff" stroke="#2b1d52" stroke-width="1.5"/>
+      <circle cx="50" cy="64" r="8" fill="#fff" stroke="#2b1d52" stroke-width="1.5"/><circle cx="47" cy="63" r="1.3" fill="#2b1d52"/><circle cx="53" cy="63" r="1.3" fill="#2b1d52"/>
+      <path d="M31 94h38" stroke="#2b1d52" stroke-width="4"/>
+      <path d="M50 108v-14" stroke="#2b1d52" stroke-width="4"/>
+    </svg>
+  </div>
+  <button class="skip" id="skip">تخطَّ</button>
+</section>
+
+<!-- 4. READER -->
+<section id="reader" class="scene" aria-label="الحكاية">
+  <canvas class="fxc" id="fxReader" aria-hidden="true"></canvas>
+  <header class="r-head" id="rHead">
+    <button class="pill" id="back" aria-label="العودة إلى الكواكب"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 4 8 8-8 8" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lbl">الكواكب</span></button>
+    <div class="r-title" id="rTitle"></div>
+    <div class="r-count" id="rCount"></div>
+  </header>
+  <div class="r-main">
+    <article class="page" id="page">
+      <div class="leaf" id="leaf"></div>
+      <div class="bunny-slot" id="bunnySlot" role="button" tabindex="0" aria-label="أرنوب">
+        <div class="bubble" id="bubble"></div>
+        <div class="zzz" id="zzz" data-l="0"><span>z</span><span>Z</span><span>Z</span></div>
+        <svg class="bunny" id="bunny" viewBox="0 0 280 150" aria-hidden="true">
+          <ellipse cx="140" cy="143" rx="118" ry="6" fill="rgba(58,42,90,.18)"/>
+          <g class="b-breathe">
+            <g class="b-tail"><circle cx="44" cy="104" r="17" class="fur"/></g>
+            <ellipse cx="72" cy="134" rx="30" ry="11" class="fur"/>
+            <ellipse cx="128" cy="108" rx="86" ry="34" class="fur"/>
+            <g class="b-blanket">
+              <path d="M22 118C30 84 100 70 166 79L170 141 26 141Z" fill="#6f5de8" stroke="#3a2a5a" stroke-width="3.5" stroke-linejoin="round"/>
+              <path d="M40 104C70 90 120 86 164 92" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-dasharray="6 7" stroke-linecap="round"/>
+              <g fill="#ffd166"><circle cx="60" cy="122" r="3.5"/><circle cx="96" cy="110" r="3"/><circle cx="128" cy="126" r="3.5"/><circle cx="150" cy="104" r="2.5"/><circle cx="84" cy="132" r="2.5"/></g>
+            </g>
+            <g class="b-head">
+              <g class="b-ear1"><g class="b-ein1"><ellipse cx="180" cy="26" rx="12" ry="34" class="fur"/><ellipse cx="180" cy="30" rx="5.5" ry="24" fill="#ffb3cf"/></g></g>
+              <g class="b-ear2"><g class="b-ein2"><ellipse cx="204" cy="24" rx="12" ry="34" class="fur"/><ellipse cx="204" cy="28" rx="5.5" ry="24" fill="#ffb3cf"/></g></g>
+              <circle cx="200" cy="88" r="40" class="fur"/>
+              <ellipse cx="178" cy="102" rx="8" ry="5" fill="#ffb3cf" opacity=".75"/>
+              <ellipse cx="222" cy="102" rx="8" ry="5" fill="#ffb3cf" opacity=".75"/>
+              <g class="b-open"><g class="b-blink"><g class="b-look" id="bLook">
+                <ellipse cx="186" cy="86" rx="5.5" ry="7.5" fill="#3a2a5a"/><circle cx="188" cy="83" r="2" fill="#fff"/>
+                <ellipse cx="214" cy="86" rx="5.5" ry="7.5" fill="#3a2a5a"/><circle cx="216" cy="83" r="2" fill="#fff"/>
+              </g></g></g>
+              <g class="b-shut" fill="none" stroke="#3a2a5a" stroke-width="3" stroke-linecap="round"><path d="M180 87q6 6 12 0"/><path d="M208 87q6 6 12 0"/></g>
+              <path class="b-nose" d="M196 95h8l-4 4.5z" fill="#ff7fa8" stroke="#3a2a5a" stroke-width="2" stroke-linejoin="round"/>
+              <path class="b-mouth" d="M200 99.5v3.5m0 0q-4 4-8 1m8-1q4 4 8 1" fill="none" stroke="#3a2a5a" stroke-width="2.4" stroke-linecap="round"/>
+              <ellipse class="b-yawn" cx="200" cy="106" rx="5" ry="7" fill="#8a3358" stroke="#3a2a5a" stroke-width="2.4"/>
+              <g stroke="#3a2a5a" stroke-opacity=".45" stroke-width="1.6" stroke-linecap="round"><path d="M186 98l-18-3M186 102l-17 2M214 98l18-3M214 102l17 2"/></g>
+              <g class="b-cap">
+                <path d="M166 60Q186 14 236 20Q222 36 236 60Z" fill="#ff7eb6" stroke="#3a2a5a" stroke-width="3" stroke-linejoin="round"/>
+                <circle cx="190" cy="40" r="2.6" fill="#ffd166"/><circle cx="212" cy="30" r="2.2" fill="#ffd166"/><circle cx="214" cy="50" r="2.4" fill="#ffd166"/>
+                <path d="M164 61Q200 46 238 61" fill="none" stroke="#3a2a5a" stroke-width="12" stroke-linecap="round"/>
+                <path d="M164 61Q200 46 238 61" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+                <circle cx="240" cy="20" r="8" fill="#fff" stroke="#3a2a5a" stroke-width="3"/>
+              </g>
+            </g>
+            <ellipse cx="184" cy="134" rx="15" ry="9" class="fur"/>
+            <g class="b-paw"><ellipse cx="216" cy="134" rx="15" ry="9" class="fur"/></g>
+          </g>
+        </svg>
+      </div>
+    </article>
+  </div>
+  <nav class="r-nav" id="rNav">
+    <button class="navb" id="prev" aria-label="الصفحة السابقة"><svg width="24" height="24" viewBox="0 0 24 24"><path d="m9 4 8 8-8 8" fill="none" stroke="#3a2300" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="dots" id="dots"></div>
+    <button class="navb" id="next" aria-label="الصفحة التالية"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M15 4 7 12l8 8" fill="none" stroke="#3a2300" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </nav>
+</section>
+
+<div id="flash"></div>
+
+<script>
+const STORIES = [
+{ title:"حوت الفانوس", tag:"بحرٌ يُغنّي", colors:["#aef6ff","#2fb4e6","#0c3f7a"], bg:"#1677c9", spot:"#e8fbff", ring:null, moon:"#e8f7ff", surface:"waves", particle:"bubble", spin:26, seed:11,
+  hero:{k:"fish",c:["#5fb8ff","#e8f7ff"]},
+  world:{sky:["#5cc8f5","#c9f3ff"],hills:["#6fd0f5","#3aa6de","#f3dca6"],water:true,props:["coral","seaweed"],pc:["#ff8fb1","#ffb35c","#7fe0a8","#b18cff"],extras:["bubbles"]},
+  pages:[
+  "بعيدًا خلف آخر مصباح في السماء، يوجد كوكب كلّه بحر. أمواجه فضّية، وأسماكه تغنّي، وفي كل مساء يصعد من الأعماق حوت كبير اسمه نور، وعلى أنفه فانوس يتوهّج.",
+  "مهمّة نور مهمّة جدًّا. فهو يسبح من خليج إلى خليج، يضيء الطريق لكل سمكة صغيرة وسرطان وحصان بحر ابتعد كثيرًا عن سريره. ويدندن بهدوء: «اتبعوا الضوء… اتبعوا الضوء».",
+  "وفي إحدى الأمسيات، رفض حصان بحر صغير اسمه نبنوب أن يتبع الضوء. قال وهو يدور حول نفسه: «لستُ نعسانًا! أريد أن أرى ما وراء قلعة المرجان!» فابتسم نور وقال: «تعال معي إذن، سأريك».",
+  "سبحا معًا بجانب قلعة المرجان، حيث كانت نجوم البحر تتدثّر بالرمل. ومرّا فوق غابة الأعشاب، حيث كانت ثعالب الماء تمسك أيدي بعضها كي لا يطفو أحد بعيدًا في أحلامه.",
+  "وعند آخر البحر، صار الماء نجومًا! شهق نبنوب؛ فقد كانت السماء كلّها منعكسة هناك، تلمع بسكون. همس نور: «هنا يبدأ الليل». فتثاءب نبنوب تثاؤبة صغيرة.",
+  "حمله نور إلى البيت على طرف ذيله، وفانوسه يتوهّج بنور خافت ناعم. وحين وصلا إلى صدفته الصغيرة، كان نبنوب قد غرق في النوم، يحلم بنجوم تسبح. وغنّى حوت الفانوس للبحر حتى نام."]},
+{ title:"جبل المارشميلو", tag:"أنهار كاكاو وثلج من سكّر", colors:["#fff0f7","#ff9ccf","#b53477"], bg:"#ff5fa8", spot:"#7fe0d6", ring:"#ffe36b", moon:null, surface:"swirl", particle:"candy", spin:34, seed:22,
+  hero:{k:"bear",c:["#f7a6c8","#fff0f7"]},
+  world:{sky:["#ffa8d2","#ffe9f4"],hills:["#ffd6ea","#fff7fb","#f7b6d2"],props:["lollipop","tree"],pc:["#ff6fae","#7fe0d6","#ffd166","#b18cff"],extras:[]},
+  pages:[
+  "على كوكب وردي ناعم كالقطن، يقف جبل مصنوع من المارشميلو. أنهاره تجري بالكاكاو الدافئ، وأشجاره تنبت أوراق النعناع، وثلجه طعمه يشبه الفانيليا قليلًا.",
+  "وفي أعلى القمّة تعيش الجدّة توفي، دبّة صغيرة تحمل ملعقة خشبية كبيرة. وكل ليلة تحرّك أنهار الكاكاو لتبقى دافئة لكل من يحتاج إلى مشروب لذيذ قبل النوم.",
+  "لكن الليلة اختفت الملعقة! قالت الجدّة توفي: «يا إلهي! من دون ملعقتي سيبرد الكاكاو، ولن يشعر أحد على الجبل بالنعاس والدفء».",
+  "بحثت أرانب الجيلي بين بساتين المصّاصات، وفتّشت فئران السكّر تحت كل حجر من الحلوى. وأخيرًا وجدت نعجة صغيرة اسمها قطنة الملعقة عالقة في كومة مارشميلو، في المكان الذي غفت فيه الجدّة بعد الظهر!",
+  "ضحكت الجدّة توفي حتى اهتزّ مريولها. وحرّكت الأنهار دورةً بعد دورة، فطفت رائحة الكاكاو الدافئة فوق الجبل كلّه مثل بطانية حلوة ناعمة.",
+  "شرب كل واحد كوبًا صغيرًا، ثم تدثّر في سريره من المارشميلو. صار الجبل هادئًا ومنفوشًا ودافئًا. ونامت قطنة وعلى وجهها ابتسامة بطعم الكاكاو، وما زالت تمسك طرف الملعقة."]},
+{ title:"حديقة التروس", tag:"حيث تدقّ الأزهار النحاسية", colors:["#fff3b8","#e8ad3c","#6e4310"], bg:"#d0871b", spot:"#fff3b8", ring:"#9be3c3", moon:"#c9d3dd", surface:"craters", particle:"gear", spin:40, seed:33,
+  hero:{k:"robot",c:["#9bd0e8","#e8f7ff"]},
+  world:{sky:["#ffc46b","#fff1c9"],hills:["#e0b04c","#c48f2e","#94621e"],props:["clocktower","flower"],pc:["#ffd166","#9be3c3","#ff8fb1"],extras:[]},
+  pages:[
+  "هناك كوكب يدقّ: تِك، تَك. أزهاره ببتلات من نحاس، ونحلاته مصنوعة من نوابض صغيرة، وفي وسط حديقته تقف ساعة طويلة تخبر العالم كلّه متى يستيقظ ومتى ينام.",
+  "يعتني بالحديقة روبوت صغير اسمه صامولة. يزيّت زهور التوليب، ويلمّع عبّاد الشمس، ويملأ الساعة الكبيرة بمفتاح بحجمه تمامًا. تِك، تَك، تِك، تَك.",
+  "وفي إحدى الليالي انشغل صامولة كثيرًا حتى نسي أن يملأ الساعة. فتوقّفت عقاربها قبل موعد النوم بقليل. بقيت الأزهار النحاسية مفتوحة، وظلّ النحل يطنّ، ولم يستطع أحد أن ينام.",
+  "صفّر صامولة: «يا للمشكلة!» وتسلّق برج الساعة، ترسًا بعد ترس. كانت الريح تصفر بين التروس، وذراعاه الصغيرتان متعبتان، لكنه تمسّك جيدًا وواصل التسلّق.",
+  "وفي القمّة أدار صامولة المفتاح. لفّة، لفّتان، ثلاث لفّات… طَق! تحرّكت العقارب الكبيرة أخيرًا إلى موعد النوم، وأطلقت الحديقة كلّها صريرًا طويلًا ناعسًا.",
+  "انطوت البتلات النحاسية، والتفّ النحل في جرار العسل. واستلقى صامولة بجانب الساعة يستمع إلى دقّاتها البطيئة الهادئة. تِك… تَك. تِك… تَك. تصبحين على خير أيّتها الحديقة."]},
+{ title:"فستق والقمر المستعار", tag:"فأر وفنجان وقمر", colors:["#f1ecff","#a791f5","#3a2790"], bg:"#6a4de0", spot:"#f1ecff", ring:null, moon:"#fff4c4", surface:"craters", particle:"star", spin:30, seed:44,
+  hero:{k:"mouse",c:["#cfc8e0","#ffffff"]},
+  world:{sky:["#4a3ab8","#a996ff"],hills:["#7d6ad8","#5c49c0","#3f2f9a"],props:["house","pine"],pc:["#8fd4ff","#ffd6ee","#3f9a7a"],extras:[]},
+  pages:[
+  "كان فستق أصغر فأر على كوكب ليس له قمر أبدًا. كل ليلة كانت السماء تبقى مظلمة وفارغة، وكل ليلة كان فستق يتمنّى ضوءًا صغيرًا ينام على نوره.",
+  "وفي مساءٍ ما، حزم فستق شطيرة جبن، وركب صاروخًا على شكل فنجان شاي، وطار إلى الأعلى، والأعلى، والأعلى، حتى وصل إلى كوكب جار كبير عنده ثلاثة أقمار.",
+  "قال فستق للقمر الأكبر: «عفوًا، هل يمكنني أن أستعير واحدًا منكم؟ لليلة واحدة فقط، وأعدكم أن أعيده في الصباح». فضحكت الأقمار وتهامست فيما بينها.",
+  "تقدّم القمر الأصغر وقال: «أنا سآتي، فطالما تمنّيت أن أرى سماءً جديدة». فربط فستق حوله شريطًا برفق شديد، وسحبه خلف فنجانه حتى البيت.",
+  "في تلك الليلة، توهّج كوكب فستق بلون فضّي لأول مرة. غنّت الصراصير للقمر، ورفعت الأزهار وجوهها نحوه، وخرجت كل الفئران من جحورها لتلوّح له.",
+  "تكوّر فستق في سريره المصنوع من قشرة جوزة، والقمر يلمع من نافذته. همس: «شكرًا لك». فهمس القمر: «عفوًا يا صديقي». وغرقا معًا في أنعم الأحلام."]},
+{ title:"مكتبة البومة الثلجية", tag:"كتابٌ لكل حلم", colors:["#ffffff","#c4e6ff","#4a7cc4"], bg:"#3d86dc", spot:"#ffffff", ring:"#e0f4ff", moon:null, surface:"spots", particle:"snow", spin:38, seed:55,
+  hero:{k:"owl",c:["#f2f4ff","#c4e6ff"]},
+  world:{sky:["#7fbfff","#e8f6ff"],hills:["#ffffff","#e6f3ff","#d3e8fb"],props:["crystal","books","pine"],pc:["#9fd8ff","#c4b5ff","#ffb3cf","#2f7a6a"],extras:[]},
+  pages:[
+  "على كوكب أبيض مثلج، تلمع كل تلّة فيه كالسكّر، توجد مكتبة مبنيّة داخل جبل جليدي. رفوفها منحوتة من الصقيع، ومصابيحها مصنوعة من ضوء النجوم المتجمّد.",
+  "أمينة المكتبة بومة ثلجية عجوز اسمها السيدة سُكون. لها نظّارة مستديرة، وريشة للكتابة، وعندها كتاب لكل حلم حلم به أيّ أحد على الإطلاق.",
+  "وفي ليلة مثلجة، طرق فرخ بطريق صغير اسمه بطبوط باب الجليد. قال: «يا سيدة سُكون، لا أجد حلمًا أحلم به. بحثت في كل مكان، ورأسي مشغول جدًّا».",
+  "نفشت السيدة سُكون ريشها، وطارت إلى أعلى رفّ، وأنزلت كتابًا أزرق صغيرًا. قالت: «هذا الكتاب جديد تمامًا، يحكي عن بطريق تعلّم الطيران مع ندف الثلج».",
+  "جلس بطبوط قرب مدفأة الصقيع، وقرأت له السيدة سُكون بأنعم صوت عندها. وفي الخارج كان الثلج يتساقط ببطء، ببطء، وكأنّ كل ندفة تهمس: هُسسس.",
+  "وقبل الصفحة الأخيرة، كان بطبوط قد نام بعمق، يطير في حلمه الخاص مع ندف الثلج. فغطّته السيدة سُكون ببطانية، وأغلقت الكتاب من دون أيّ صوت."]},
+{ title:"سفينة القبطان كعكة", tag:"إبحار في سماء المساء", colors:["#fff6da","#86d6ff","#2a6bd4"], bg:"#3eaaf5", spot:"#ffffff", ring:null, moon:"#ffd66b", surface:"clouds", particle:"cloud", spin:24, seed:66,
+  hero:{k:"hedgehog",c:["#f3d6a8","#fff4e0"]},
+  world:{sky:["#58bdfb","#e4f6ff"],hills:["#ffffff","#eaf6ff","#8fd47a"],props:["cloudprop","tree"],pc:["#7fd47a","#ffd166","#ff8fb1"],extras:["balloons"]},
+  pages:[
+  "عاليًا فوق كوكب من الجزر الطائرة، تبحر سفينة مصنوعة من الغيوم. أشرعتها منفوشة، ومرساتها قوس قزح، وقبطانها قنفذ مستدير مرح اسمه القبطان كعكة.",
+  "للقبطان كعكة وبحّارته من العصافير مهمّة خاصّة: في كل مساء يبحرون عبر السماء ليجمعوا آخر أشعّة الشمس الدافئة، ويحفظوها في برطمانات للّيالي الباردة.",
+  "الليلة هبّت ريح قويّة: ووووش! دارت سفينة الغيوم وتمايلت، وتدحرجت برطمانات الشمس على السطح. صاح القبطان: «تمسّكوا بقبّعاتكم!»",
+  "فردت عصفورة صغيرة اسمها نقطة جناحيها على اتّساعهما، وأمسكت الريح كأنّها طائرة ورقية. شدّت الحبل، وأدارت الدفّة، وقادت السفينة بأمان إلى غيمة هادئة دافئة.",
+  "هتف القبطان كعكة: «ثلاث هتافات لنقطة!» وفتح البحّارة برطمانًا واحدًا من أشعّة الشمس، فملأ نوره الذهبي السفينة. وجلس الجميع متقاربين، دافئين وفخورين.",
+  "ولمّا ظهرت النجوم، صارت سفينة الغيوم تتهادى كالمهد. دسّت نقطة رأسها تحت جناحها، وتكوّر القبطان كرةً شائكة صغيرة، وأبحر الطاقم كلّه بهدوء إلى النوم."]},
+{ title:"التنين الذي جمع الهدوء", tag:"قوارير مليئة بالسكون", colors:["#ffe28f","#ff7b2f","#7d1a12"], bg:"#e0461d", spot:"#ffe36b", ring:null, moon:"#ffcf99", surface:"lava", particle:"ember", spin:32, seed:77,
+  hero:{k:"dragon",c:["#ff7b4f","#ffe28f"]},
+  world:{sky:["#ff7a45","#ffd6a0"],hills:["#d65a33","#ad3e22","#7a2615"],props:["volcano","crystal"],pc:["#5a1a10","#ffb35c","#ffe36b"],extras:[]},
+  pages:[
+  "على كوكب برتقالي دافئ مليء بالبراكين النائمة، يعيش تنّين اسمه لهيب. معظم التنانين تجمع الذهب، أمّا لهيب فيجمع شيئًا أندر بكثير: إنّه يجمع الهدوء.",
+  "يحفظه في قوارير زجاجية: همسة الثلج وهو يتساقط، والسكتة بعد التهويدة، وصمت قطّة صغيرة نائمة. وكل قارورة تتوهّج بلون ناعم مختلف على رفوفه.",
+  "وفي ليلة، مرّت عاصفة صاخبة فوق الكوكب. دوّى الرعد، وفرقع البرق، واختبأت كل سحالي الحمم الصغيرة تحت صخورها، خائفة لا تستطيع أن تغمض عيونها.",
+  "عرف لهيب ما يجب فعله. طار من صخرة إلى صخرة يفتح قواريره واحدة بعد أخرى. فانساب هدوء الثلج المتساقط، وطفت سكينة التهويدة فوق التلال.",
+  "وشيئًا فشيئًا، بدا الرعد أبعد فأبعد. أطلّت السحالي من مخابئها، ثم تثاءبت، ثم لفّت ذيولها حول أنوفها وأغمضت عيونها.",
+  "كان لهيب قد استعمل كل قواريره تقريبًا، لكنّه لم يحزن. استلقى بجانب بركان دافئ، وأصغى إلى الهدوء الجديد الذي صنعه بنفسه. كان أجمل هدوء على الإطلاق. تصبح على خير يا لهيب."]},
+{ title:"موكب اليراعات", tag:"ضوءٌ صغير واحد", colors:["#dcff9e","#48c46d","#0e4a38"], bg:"#16875a", spot:"#1e6b44", ring:null, moon:null, surface:"forest", particle:"firefly", spin:36, seed:88,
+  hero:{k:"bug",c:["#4a5a8c","#e9ff7a"]},
+  world:{sky:["#2a7a64","#8fdcae"],hills:["#3b9a63","#257a4c","#155a36"],props:["tree","mushroom"],pc:["#2f8a5a","#ff8fb1","#ffd166"],extras:[]},
+  pages:[
+  "في أعماق كوكب تغطّيه غابات تهمس، هناك ليلة واحدة كل عام تقيم فيها اليراعات موكبًا كبيرًا. تضيء الأشجار والأنهار والسماء، كلّها في وقت واحد.",
+  "كانت لمعة أصغر يراعة على الإطلاق، وهذا أوّل موكب لها. لكن كانت هناك مشكلة واحدة: ضوؤها لا يشتعل! رمشت وتمايلت وحاولت، لكن لم يحدث شيء.",
+  "جلست لمعة وحيدة على فطر وتنهّدت: «ربّما أنا صغيرة جدًّا». فقفز إليها ضفدع عجوز حكيم ونقنق: «الأضواء لا تشتعل بالمحاولة الشديدة، بل تشتعل حين تشعرين بالسعادة في داخلك».",
+  "ففكّرت لمعة في أشياء سعيدة: رائحة المطر، وعناق أمّها، والرقص مع صديقاتها في أمسيات الصيف الدافئة. وفي أعماقها، بدأ شيء صغير يتوهّج.",
+  "ومض، ومض، ولمع! انطلقت لمعة إلى السماء وانضمّت إلى الموكب. دارت اليراعات في دوائر، ورسمت نجومًا وقلوبًا، وابتسامة كبيرة جدًّا في قلب الظلام.",
+  "ولمّا انتهى الموكب، استقرّت اليراعات بين العشب الطويل كفوانيس صغيرة متعبة. خفت ضوء لمعة حتى صار أنعم وهج. ونامت سعيدة تحت نجوم الغابة."]},
+{ title:"مدينة البالونات", tag:"بيوت تطير مع النسيم", colors:["#fff0fa","#ffa6d2","#7a4fd0"], bg:"#ff7cc0", spot:"#7fd4ff", ring:"#7fd4ff", moon:null, surface:"spots", particle:"balloon", spin:30, seed:99,
+  hero:{k:"cat",c:["#ffb35c","#fff4e6"]},
+  world:{sky:["#ffbfe0","#d9f1ff"],hills:["#c2e8ff","#a8dcff","#8fd4a8"],props:["house","balloon"],pc:["#ff6fae","#7fd4ff","#ffd166","#b18cff"],extras:["balloons"]},
+  pages:[
+  "في السماء الورديّة يطفو كوكب صغير اسمه مدينة البالونات. بيوته مربوطة ببالونات ملوّنة، وشوارعه تتمايل مع النسيم، وكل مساء يغنّي الهواء أغنية ناعمة.",
+  "تعيش هناك قطّة صغيرة اسمها ميشو. كانت تحبّ البالونات أكثر من أيّ شيء، وتحلم أن تطير عاليًا، أعلى من كل البيوت، لتلمس غيمة بيدها.",
+  "في ذلك المساء، أمسكت ميشو خيوط خمسة بالونات، ويا للعجب! ارتفعت قدماها عن الأرض. صاحت وهي تضحك: «أنا أطير!» والبيوت تصغر تحتها شيئًا فشيئًا.",
+  "لمست ميشو غيمة طريّة، فكانت باردة وناعمة كالآيس كريم. ثم رأت الشمس تغيب، والنجوم تفتح عيونها واحدة بعد أخرى، ففكّرت: «أين بيتي؟»",
+  "ومن بعيد رأت نافذة بيتها مضيئة، وأمّها تلوّح لها. فأطلقت ميشو بالونًا بعد بالون، ونزلت ببطء… ببطء… مثل ريشة ترقص في الهواء.",
+  "هبطت ميشو في حضن أمّها تمامًا. شربت حليبها الدافئ، وربطت بالوناتها بجانب سريرها. ثم أغمضت عينيها، وطارت في أحلامها فوق غيوم من آيس كريم."]},
+{ title:"السلحفاة وقطار النجوم", tag:"رحلة حول القمر", colors:["#dfe6ff","#6f86ff","#1f2a7a"], bg:"#4a5de0", spot:"#dfe6ff", ring:"#ffd166", moon:"#fff4c4", surface:"craters", particle:"star", spin:34, seed:110,
+  hero:{k:"turtle",c:["#4fbf7a","#bff0a8"]},
+  world:{sky:["#27348a","#8093ee"],hills:["#4a5bc0","#34449f","#233083"],props:["pine","house"],pc:["#3f9a7a","#ffd166","#7fd4ff"],extras:["train"]},
+  pages:[
+  "على كوكب أزرق هادئ، يمرّ كل ليلة قطار مصنوع من النجوم. عرباته تلمع، وصافرته تغنّي: «توووت»، ويأخذ الحيوانات في رحلة قصيرة حول القمر قبل النوم.",
+  "سنسن سلحفاة صغيرة بطيئة جدًّا. كل ليلة كانت تمشي نحو المحطّة خطوة… خطوة… خطوة، لكنّها تصل دائمًا بعد أن يرحل القطار.",
+  "الليلة جلست سنسن حزينة على رصيف المحطّة. نزلت دمعة صغيرة على خدّها، وقالت بصوت خافت: «لن أركب قطار النجوم أبدًا».",
+  "لكنّ السائق، وهو نجم عجوز له لحية من ضوء، لاحظ السلحفاة الصغيرة. فأوقف القطار، ورجع به إلى الخلف ببطء، حتى توقّف أمامها تمامًا.",
+  "قال لها مبتسمًا: «القطار لا يرحل من دون أصدقائه». فصعدت سنسن، وجلست بجانب النافذة، ودار القطار بها حول القمر، والنجوم تلوّح لها.",
+  "وحين عادت إلى البيت، كانت عيناها ثقيلتين من السعادة. سحبت رأسها داخل صدفتها الدافئة، ونامت، تسمع صافرة القطار البعيدة: توووت… توووت."]},
+{ title:"بستان الفطر المضيء", tag:"كلمات طيّبة تنير الطريق", colors:["#f2d9ff","#b06cf0","#3e1a78"], bg:"#8a4fd8", spot:"#7fffe0", ring:null, moon:"#e0d0ff", surface:"spots", particle:"firefly", spin:36, seed:121,
+  hero:{k:"snail",c:["#c07adf","#ffd9a8"]},
+  world:{sky:["#43247e","#a47de2"],hills:["#6b45b3","#522f95","#381f70"],props:["mushroom"],pc:["#7fffe0","#ff8fe0","#8fb5ff","#ffe36b"],extras:[]},
+  pages:[
+  "في كوكب بنفسجي، يوجد بستان فيه فطر كبير يضيء في الليل مثل المصابيح. أزرق وأخضر ووردي، يتوهّج كلّما همس له أحد بكلمة لطيفة.",
+  "الحلزونة لولبة تحمل بيتها على ظهرها، وتتنزّه بين الفطر كل مساء. لكنّها الليلة ابتعدت كثيرًا، ولم تعد تعرف طريق الرجوع.",
+  "كان البستان مظلمًا، والفطر نائمًا لا يضيء. ارتجف قرنا لولبة الصغيران، وقالت بصوت خافت: «أنا خائفة قليلًا».",
+  "ثم تذكّرت سرّ البستان. فاقتربت من فطرة صغيرة وهمست: «أنتِ جميلة». فتوهّجت الفطرة بلون أزرق ناعم! ثم همست للفطرة التالية: «شكرًا لكِ».",
+  "وهكذا، كلمة لطيفة بعد كلمة لطيفة، صار أمامها طريق من الأضواء الملوّنة يلمع حتى باب بيتها. ضحكت لولبة: «الكلمات الطيّبة تنير الطريق!»",
+  "وصلت لولبة إلى بيتها، ودخلت صدفتها المستديرة، وتمنّت للفطر ليلة سعيدة. فأضاء البستان كلّه مرّة أخيرة، ثم خفت بهدوء، ونامت لولبة مبتسمة."]},
+{ title:"دبدوب ومهرجان العسل", tag:"نحلات ترقص وأزهار تغنّي", colors:["#fff4b8","#ffc83d","#8a5a0a"], bg:"#f0a818", spot:"#ffffff", ring:null, moon:"#ffffff", surface:"swirl", particle:"petal", spin:30, seed:132,
+  hero:{k:"bear",c:["#b5773e","#f3d3a3"]},
+  world:{sky:["#ffc23d","#fff2bf"],hills:["#f2d56a","#dfb23c","#b3861b"],props:["flower","tree"],pc:["#ff8fb1","#ffffff","#b18cff","#6fcf5a"],extras:["bees"]},
+  pages:[
+  "على كوكب ذهبي مليء بالأزهار، يُقام كل عام مهرجان العسل. تطير النحلات في رقصات جميلة، وتصنع أحلى عسل في المجرّة كلّها.",
+  "دبدوب دبّ صغير يحبّ العسل كثيرًا. لكنّه هذا العام أراد شيئًا مختلفًا: أراد أن يساعد النحلات، بدلًا من أن يأكل فقط.",
+  "فحمل دبدوب إبريقًا صغيرًا، وسقى الأزهار واحدة واحدة، حتى تعبت ذراعاه. وقالت الأزهار: «شكرًا يا دبدوب!» وفتحت بتلاتها على اتّساعها.",
+  "فرحت النحلات بالأزهار الكثيرة، وصنعت عسلًا أكثر من أيّ عام مضى. ثم طارت حول دبدوب ترقص وتطنّ: «بزززز! أنت بطل المهرجان!»",
+  "وفي المساء، أهدته الملكة نحلة جرّة صغيرة من العسل الذهبي، مكتوب عليها: «إلى صديقنا المساعد». فاحمرّ خدّا دبدوب من الفرح.",
+  "أكل دبدوب ملعقة واحدة فقط، وحفظ الباقي لأصدقائه. ثم تكوّر تحت شجرة كبيرة، والنحلات تطنّ حوله تهويدة ناعمة: بزز… بزز… حتى نام."]},
+{ title:"أوركسترا الضفادع", tag:"موسيقى فوق البحيرة", colors:["#d8ffe0","#4fd18b","#0f5a4a"], bg:"#1fa877", spot:"#ffffff", ring:"#bff5ff", moon:null, surface:"waves", particle:"note", spin:28, seed:143,
+  hero:{k:"frog",c:["#6fcf5a","#e6ffc4"]},
+  world:{sky:["#3fb3a6","#c9f5e4"],hills:["#79d69c","#3fb8d0","#2f9a64"],water:true,props:["flower","mushroom"],pc:["#ff9fd0","#ffffff","#ffd166"],extras:[]},
+  pages:[
+  "على كوكب أخضر فيه بحيرة لامعة، تعيش أوركسترا من الضفادع. كل ليلة تجلس على أوراق اللوتس، وتعزف موسيقى تساعد الكوكب كلّه على النوم.",
+  "قائد الأوركسترا ضفدع صغير اسمه نقنوق، يحمل عصا رفيعة من القصب. يرفعها فيبدأ العزف: نق، نق، نق… ويخفضها فيهدأ كل شيء.",
+  "لكن الليلة جاء إلى البحيرة صرصور صغير يعزف لحنًا سريعًا وعاليًا: تِرِررر! فاختلط اللحنان، وضحك السمك، ولم يستطع أحد أن ينام.",
+  "لم يغضب نقنوق، بل قال للصرصور: «لحنك جميل! ما رأيك أن تعزفه معنا… ببطء؟» ففكّر الصرصور قليلًا، ثم هزّ رأسه موافقًا.",
+  "رفع نقنوق عصاه، وعزفت الضفادع، وعزف الصرصور معها ببطء: نق… تِر… نق… تِر. فصار اللحن أجمل لحن سمعته البحيرة على الإطلاق.",
+  "تثاءب السمك، وأغمضت زهور اللوتس بتلاتها، وأطفأت اليراعات أضواءها. ووضع نقنوق عصاه جانبًا، ونام على ورقة لوتس تتهادى فوق الماء."]},
+{ title:"قلعة الرمال الذهبية", tag:"غرفة صغيرة للريح", colors:["#fff0c4","#ffb24d","#8a3f12"], bg:"#f07f2a", spot:"#fff0c4", ring:null, moon:"#ffe9c4", surface:"lava", particle:"star", spin:38, seed:154,
+  hero:{k:"fox",c:["#ff8a3d","#fff4e6"]},
+  world:{sky:["#ff8f4f","#ffe2ac"],hills:["#f7c984","#e8a95a","#cf8a40"],props:["castle","cactus"],pc:["#4fae5a","#ffd166"],extras:[]},
+  pages:[
+  "على كوكب من الرمال الذهبية، حيث تلمع الكثبان كالعسل، يعيش ثعلب صغير اسمه فرفور. أذناه كبيرتان، وذيله منفوش، ويحبّ البناء أكثر من أيّ شيء.",
+  "في كل مساء، يبني فرفور قلعة من الرمال: أبراج عالية، وأبواب صغيرة، ونوافذ مزيّنة بالأصداف. لكنّ الريح كانت تأتي وتهدمها كل ليلة.",
+  "الليلة جلس فرفور قرب قلعته الجديدة ينتظر. وحين هبّت الريح، قال لها بلطف: «أيّتها الريح، لماذا تهدمين قلاعي؟»",
+  "توقّفت الريح وقالت بصوت ناعم: «أنا لا أقصد! أنا فقط أبحث عن مكان أرتاح فيه، فأنا أركض طوال اليوم ولا أنام أبدًا».",
+  "ففكّر فرفور، ثم بنى في قلعته غرفة كبيرة، لها نافذة واسعة، ووسادة من الرمل الناعم. وقال: «هذه غرفتكِ يا ريح». فدخلت الريح، وتنهّدت بارتياح.",
+  "في تلك الليلة لم تُهدم القلعة. كانت الريح نائمة في غرفتها، تشخر بهدوء: فووو… فووو. وتكوّر فرفور بجانب القلعة، ولفّ ذيله حوله كبطانية، ونام."]},
+{ title:"البطريق وأضواء الشفق", tag:"سماء ترقص بالألوان", colors:["#e8fbff","#8fe3ff","#1a3f8a"], bg:"#2a6fd0", spot:"#ffffff", ring:"#9dffcf", moon:null, surface:"spots", particle:"snow", spin:36, seed:165,
+  hero:{k:"penguin",c:["#2f3d6e","#ffffff"]},
+  world:{sky:["#0e1846","#35559f"],hills:["#eef6ff","#d6e8fb","#bcd7f5"],aurora:true,props:["crystal","pine"],pc:["#9fe8ff","#2f7a6a","#d9c8ff"],extras:[]},
+  pages:[
+  "في أقصى كوكب جليدي، حيث الليل طويل والثلج يلمع، تظهر أحيانًا أضواء راقصة في السماء: خضراء وورديّة وبنفسجية. اسمها أضواء الشفق.",
+  "البطريق الصغير زلّوج لم يرَ الشفق أبدًا. فكلّما ظهر، كان قد نام قبله. وكان يسأل أمّه كل صباح: «هل جاءت الأضواء؟ لماذا لم توقظيني؟»",
+  "الليلة قرّر زلّوج أن يبقى مستيقظًا. جلس على صخرة جليدية، ولفّ حول رقبته وشاحًا أحمر، وحدّق في السماء المظلمة. انتظر… وانتظر… وانتظر.",
+  "وفجأة! رقص خيط أخضر في السماء، ثم خيط وردي، ثم صارت السماء كلّها ستارة من الألوان تتموّج. فتح زلّوج منقاره من الدهشة: «يااه!»",
+  "ورقصت الأضواء كأنّها تحيّيه، ونزلت ندف الثلج تلمع بألوانها. فرفرف زلّوج بجناحيه الصغيرين ورقص معها على الجليد، وهو يضحك.",
+  "ثم عاد إلى أمّه وتكوّر تحت دفئها. همس: «رأيتها يا أمّي، كانت أجمل من الأحلام». فقالت أمّه: «والآن حان وقت الأحلام». وأغمض زلّوج عينيه."]},
+{ title:"الحَمَلة وغيمة المطر", tag:"صديقة رماديّة صغيرة", colors:["#f0fff0","#8fe07f","#2a7a3f"], bg:"#3fae5a", spot:"#ffffff", ring:null, moon:"#e0f4ff", surface:"clouds", particle:"drop", spin:30, seed:176,
+  hero:{k:"lamb",c:["#ffffff","#e9c9a8"]},
+  world:{sky:["#86cfff","#eafbff"],hills:["#9be38a","#63c76f","#3f9e52"],props:["flower","tree"],pc:["#ff6f8f","#ffd166","#7fb2ff","#b18cff"],extras:["raincloud"]},
+  pages:[
+  "على كوكب أخضر من المروج، تعيش حَمَلة صغيرة اسمها صوفة. صوفها أبيض ومنفوش مثل الغيمة، حتى إنّ الطيور كانت تحسبها غيمة وتحطّ عليها أحيانًا.",
+  "وفي أحد الأيام، نزلت غيمة رماديّة صغيرة إلى المرج. كانت تبكي قطرات مطر: «لا أحد يحبّني. كلّهم يهربون حين أقترب».",
+  "قالت صوفة: «أنا لا أهرب منكِ. تعالي نلعب!» فلعبتا معًا طوال النهار. وكلّما ضحكت الغيمة، نزل منها رذاذ ناعم يلمع في الشمس.",
+  "ولاحظت صوفة شيئًا عجيبًا: حيثما لعبتا، كانت الأزهار تتفتّح! حمراء وصفراء وزرقاء. قالت صوفة: «انظري! مطركِ يصنع الأزهار!»",
+  "فرحت الغيمة الصغيرة كثيرًا، حتى ظهر فيها قوس قزح صغير. ومنذ ذلك اليوم صارت تزور المرج كل مساء، تسقي الأزهار، وتلعب مع صديقتها.",
+  "وحين جاء الليل، استلقت صوفة على العشب الطريّ، ونزلت الغيمة فوقها كبطانية رماديّة ناعمة. وهمست لها: «تصبحين على خير يا صديقتي». فنامتا معًا."]},
+{ title:"كوكب الألعاب", tag:"كل لعبة إلى صندوقها", colors:["#fff7cc","#ff9f5a","#a8325a"], bg:"#ff7a4a", spot:"#7fe0d6", ring:"#7fd4ff", moon:"#ffe36b", surface:"swirl", particle:"confetti", spin:26, seed:187,
+  hero:{k:"dino",c:["#7fdc6a","#fff7b0"]},
+  world:{sky:["#79acff","#e2edff"],hills:["#ffd97a","#ff9fbf","#7fe0d6"],props:["blocks","lollipop","balloon"],pc:["#ff6f8f","#ffd166","#7fb2ff","#6fcf5a"],extras:["train"]},
+  pages:[
+  "هناك كوكب كلّه ألعاب: جبال من المكعّبات، وأنهار من الكرات الملوّنة، وقطارات خشبية تدور حول الأشجار. وفي كل ليلة، يجب أن تعود كل لعبة إلى صندوقها.",
+  "ريكس ديناصور صغير أخضر، وهو المسؤول عن ترتيب الألعاب. لكنّه الليلة كان يلعب ويلعب، حتى نسي أنّ الوقت تأخّر كثيرًا.",
+  "نظر ريكس حوله فشهق: الألعاب في كل مكان! مكعّبات على الشجر، وكرات في البحيرة، ودمية قطنية نائمة فوق سقف القطار. «كيف سأرتّب كل هذا؟»",
+  "فجاءت الألعاب لمساعدته! قفزت المكعّبات إلى صندوقها واحدًا واحدًا، وتدحرجت الكرات في صفّ طويل، وحمل القطار الدمى في عرباته.",
+  "وخلال دقائق، صار الكوكب مرتّبًا ولامعًا. قال ريكس: «شكرًا يا أصدقائي! الترتيب مع الأصدقاء ممتع جدًّا!» فصفّقت الألعاب من داخل صناديقها.",
+  "ثم تسلّق ريكس صندوقه الخاص، وتدثّر بمنديل ناعم مرسوم عليه نجوم. وأغلقت الألعاب صناديقها بهدوء: طَق، طَق، طَق. ونام الجميع."]},
+{ title:"جسر قوس قزح", tag:"فرشاة صغيرة وسبعة ألوان", colors:["#ffffff","#ffb3e0","#6a4fd0"], bg:"#b574f0", spot:"#ffffff", ring:"#ffe36b", moon:null, surface:"rainbow", particle:"petal", spin:30, seed:198,
+  hero:{k:"bird",c:["#ff6b8b","#ffe3ea"]},
+  world:{sky:["#93d4ff","#fff0fa"],hills:["#bff2ad","#8fdc8a","#5fbf6f"],rainbow:true,props:["flower","tree"],pc:["#ff6f8f","#ffd166","#7fb2ff","#b18cff","#ffa94d"],extras:[]},
+  pages:[
+  "على كوكب الألوان، يمتدّ فوق الوادي جسر عظيم من قوس قزح. تعبره الحيوانات كل يوم، وتنزلق عليه وهي تضحك من أعلاه إلى أسفله.",
+  "وفي يوم عاصف، مرّت غيمة سوداء كبيرة، ونزل مطر غزير. وحين توقّف المطر، شهق الجميع: الجسر فقد ألوانه، وصار رماديًّا باهتًا!",
+  "كانت العصفورة رشرش أصغر رسّامة في الوادي. قالت بشجاعة: «سأعيد للجسر ألوانه!» وأخذت فرشاتها الصغيرة، وطارت إلى الأزهار.",
+  "أخذت الأحمر من الورد، والبرتقالي من البرتقال، والأصفر من الشمس، والأخضر من العشب، والأزرق من البحيرة، والبنفسجي من زهرة الليلك.",
+  "ثم طارت فوق الجسر ذهابًا وإيابًا، ترسم خطًّا بعد خطّ. وحين انتهت، لمع قوس قزح أجمل من قبل، وهتفت الحيوانات: «شكرًا يا رشرش!»",
+  "كانت أجنحة رشرش متعبة جدًّا، ومليئة بالألوان. فعادت إلى عشّها فوق الجسر، ودسّت رأسها تحت جناحها الملوّن، ونامت، تحلم بألوان جديدة."]},
+{ title:"حفلة شاي تحت الكرز", tag:"بتلات ورديّة في الأكواب", colors:["#fff0f5","#ffb0c8","#a8325a"], bg:"#ff8fb0", spot:"#ffffff", ring:null, moon:"#ffffff", surface:"spots", particle:"petal", spin:32, seed:209,
+  hero:{k:"mouse",c:["#ffc2d6","#ffffff"]},
+  world:{sky:["#ffb3cb","#fff1f6"],hills:["#ffd9e6","#c9e7a9","#9fd07f"],props:["tree","house"],pc:["#ffb3cf","#ffc9dc","#ff8fb1"],extras:["petals"]},
+  pages:[
+  "على كوكب ورديّ تغطّيه أشجار الكرز، تتساقط البتلات طوال الوقت مثل ثلج ناعم. وهناك، في بيت صغير تحت أكبر شجرة، تعيش فأرة اسمها سمسمة.",
+  "قرّرت سمسمة أن تقيم حفلة شاي في المساء. فرشت مفرشًا مربّعًا، ووضعت أكوابًا بحجم الكشتبان، وطبقًا صغيرًا من كعك العسل.",
+  "لكنّها حين نظرت إلى الطاولة قالت: «أوه! الكعك قليل، ولن يكفي كل الضيوف». فجلست قلقة، تنتظر وتفرك يديها.",
+  "ثم جاء الضيوف: جاء السنجاب ومعه بندق، وجاءت الأرنبة ومعها جزر حلو، وجاء الطائر ومعه توت أحمر. فامتلأت الطاولة بكل شيء لذيذ!",
+  "جلس الأصدقاء معًا يشربون الشاي ويضحكون، والبتلات الورديّة تتساقط في أكوابهم فيصير الشاي بطعم الورد. وقالت سمسمة: «أحلى حفلة هي التي نصنعها معًا».",
+  "وحين طلع القمر، ودّعت سمسمة ضيوفها واحدًا واحدًا. ثم تكوّرت في سريرها المصنوع من قشرة كرزة، والبتلات تغطّيها كبطانية ورديّة، ونامت."]},
+{ title:"حارسة المنارة", tag:"ثماني أذرع وضوء واحد", colors:["#d6f0ff","#4a9bff","#10306e"], bg:"#2a6fd0", spot:"#ffffff", ring:null, moon:"#fff6c4", surface:"waves", particle:"bubble", spin:24, seed:220,
+  hero:{k:"octopus",c:["#ff8fa3","#ffd6de"]},
+  world:{sky:["#22468a","#7fb0ea"],hills:["#3c7fd0","#2a64b8","#8a8fa8"],water:true,props:["lighthouse","rock"],pc:["#ff5b6b","#b0b8c8"],extras:["bubbles"]},
+  pages:[
+  "في وسط بحر كوكب أزرق عميق، تقف منارة طويلة على صخرة صغيرة. ضوؤها يدور ويدور، ليرشد السفن الصغيرة إلى المرفأ في الليل.",
+  "حارسة المنارة أخطبوطة لطيفة اسمها ثُمانة. لها ثماني أذرع، ولكل ذراع عمل: واحدة تمسح الزجاج، وواحدة تدير الضوء، وواحدة تلوّح للسفن.",
+  "وفي ليلة ضبابية، انطفأ مصباح المنارة فجأة! وصار البحر مظلمًا تمامًا. ومن بعيد، سمعت ثُمانة سفينة صغيرة تنادي: «أين الطريق؟ لا نرى شيئًا!»",
+  "لم تتردّد ثُمانة. جمعت أصدافًا لامعة، وقناديل بحر مضيئة، وربطتها كلّها بأذرعها الثماني. ثم صعدت إلى أعلى المنارة، ورفعت أذرعها عاليًا.",
+  "توهّجت المنارة كنجمة ملوّنة! رأت السفينة الضوء، وسارت نحوه ببطء، حتى رست في المرفأ بأمان. وصاح البحّارة: «شكرًا يا ثُمانة!»",
+  "وحين طلع الفجر، أعادت ثُمانة قناديل البحر إلى الماء وهي تشكرها. ثم التفّت بأذرعها الثماني حول نفسها كوسادة، ونامت في أعلى المنارة، والموج يهدهدها."]}
+];
+
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait = ms => new Promise(r => setTimeout(r, reduce ? Math.min(ms, 120) : ms));
+const DPR = Math.min(2, window.devicePixelRatio || 1);
+const rand = (a, b) => a + Math.random() * (b - a);
+const ar = n => Number(n).toLocaleString('ar-EG');
+const dur = ms => reduce ? 60 : ms;
+const O = '#2b1d52';
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+
+/* =========================================================
+   Planets
+   ========================================================= */
+function surface(p){
+  const r = rng(p.seed), R = (a,b)=>a+r()*(b-a);
+  const [c1,,c3] = p.colors; let s = '';
+  switch(p.surface){
+    case 'waves':
+      for(let i=0;i<8;i++){const y=-70+i*19;let d=`M-80 ${y}`;for(let k=0;k<8;k++)d+=` q10 ${k%2?6:-6} 20 0`;
+        s+=`<path d="${d}" fill="none" stroke="${i%2?'#fff':c1}" stroke-width="${i%2?3:6}" stroke-linecap="round" opacity="${i%2?.35:.5}"/>`;}
+      break;
+    case 'swirl':
+      for(let x=-80;x<80;x+=32) s+=`<polygon points="${x},-90 ${x+14},-90 ${x-26},90 ${x-40},90" fill="#fff" opacity=".42"/>`;
+      for(let i=0;i<12;i++) s+=`<rect x="${R(-80,80)}" y="${R(-70,70)}" width="7" height="2.6" rx="1.3" fill="${['#7fe0d6','#ffe36b','#fff','#8a6cf0'][i%4]}" transform="rotate(${R(0,180)})"/>`;
+      break;
+    case 'craters':
+      for(let i=0;i<10;i++){const x=R(-80,80),y=R(-66,66),cr=R(6,16);
+        s+=`<circle cx="${x}" cy="${y}" r="${cr}" fill="${c3}" opacity=".3"/><circle cx="${x+cr*.18}" cy="${y+cr*.18}" r="${cr*.72}" fill="${c1}" opacity=".22"/>`;}
+      break;
+    case 'spots':
+      for(let i=0;i<11;i++) s+=`<ellipse cx="${R(-80,80)}" cy="${R(-70,70)}" rx="${R(8,22)}" ry="${R(5,11)}" fill="${p.spot}" opacity=".75"/>`;
+      break;
+    case 'clouds':
+      for(let i=0;i<8;i++){const x=R(-80,80),y=R(-62,62),k=R(.7,1.2);
+        s+=`<g fill="#fff" opacity=".85"><circle cx="${x}" cy="${y}" r="${9*k}"/><circle cx="${x+10*k}" cy="${y-5*k}" r="${11*k}"/><circle cx="${x+21*k}" cy="${y}" r="${8*k}"/></g>`;}
+      break;
+    case 'lava':
+      for(let i=0;i<7;i++){const y=-66+i*22+R(-4,4);let pts=`-80,${y.toFixed(1)}`;
+        for(let x=-64;x<80;x+=16)pts+=` ${x},${(y+R(-6,6)).toFixed(1)}`;pts+=` 80,${y.toFixed(1)}`;
+        s+=`<polyline points="${pts}" fill="none" stroke="${p.spot}" stroke-width="${R(2,4)}" stroke-linejoin="round" opacity=".75"/>`;}
+      for(let i=0;i<6;i++) s+=`<circle cx="${R(-80,80)}" cy="${R(-66,66)}" r="${R(4,8)}" fill="#ffe9a8" opacity=".6"/>`;
+      break;
+    case 'forest':
+      for(let i=0;i<12;i++) s+=`<ellipse cx="${R(-80,80)}" cy="${R(-70,70)}" rx="${R(10,22)}" ry="${R(6,12)}" fill="${p.spot}" opacity=".8"/>`;
+      for(let i=0;i<16;i++) s+=`<circle cx="${R(-80,80)}" cy="${R(-70,70)}" r="1.8" fill="#f6ff8a"/>`;
+      break;
+    case 'rainbow':
+      ['#ff5b6b','#ffa94d','#ffe36b','#6fcf5a','#5ab0ff','#9b7bff'].forEach((c,i)=>{ s+=`<rect x="-80" y="${-70+i*24}" width="160" height="14" rx="7" fill="${c}" opacity=".7"/>`; });
+      break;
+  }
+  return s;
+}
+function planetSVG(p, uid){
+  const [c1,c2,c3] = p.colors, f = surface(p);
+  const feats = `<g transform="translate(-160 0)">${f}</g><g>${f}</g><g transform="translate(160 0)">${f}</g>`;
+  const ringShape = p.ring ? `<ellipse rx="122" ry="26" fill="none" stroke="${p.ring}" stroke-width="12"/><ellipse rx="108" ry="21" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="3"/><ellipse rx="128" ry="29" fill="none" stroke="rgba(20,10,50,.45)" stroke-width="2"/>` : '';
+  const ringBack = p.ring ? `<g transform="rotate(-18)" opacity=".92">${ringShape}</g>` : '';
+  const ringFront = p.ring ? `<g transform="rotate(-18)"><g clip-path="url(#${uid}f)">${ringShape}</g></g>` : '';
+  const moon = p.moon ? `<g class="moonlet"><circle cx="102" cy="-88" r="14" fill="${p.moon}" stroke="rgba(20,10,50,.5)" stroke-width="2.5"/><circle cx="97" cy="-92" r="4" fill="#fff" opacity=".6"/><circle cx="107" cy="-84" r="3" fill="rgba(0,0,0,.12)"/></g>` : '';
+  return `<svg class="planet-svg" viewBox="-135 -135 270 270" aria-hidden="true"><defs>
+  <radialGradient id="${uid}b" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="${c1}"/><stop offset=".5" stop-color="${c2}"/><stop offset="1" stop-color="${c3}"/></radialGradient>
+  <radialGradient id="${uid}s" cx="34%" cy="28%" r="82%"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".32" stop-color="#fff" stop-opacity="0"/><stop offset=".72" stop-color="#000" stop-opacity=".08"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></radialGradient>
+  <radialGradient id="${uid}g"><stop offset=".55" stop-color="${c2}" stop-opacity=".6"/><stop offset="1" stop-color="${c2}" stop-opacity="0"/></radialGradient>
+  <clipPath id="${uid}c"><circle r="80"/></clipPath>
+  <clipPath id="${uid}f" clipPathUnits="userSpaceOnUse"><rect x="-200" y="0" width="400" height="200"/></clipPath></defs>
+  <circle r="124" fill="url(#${uid}g)"/>${ringBack}
+  <circle r="80" fill="url(#${uid}b)"/>
+  <g clip-path="url(#${uid}c)"><g class="spin" style="animation-duration:${p.spin}s">${feats}</g></g>
+  <circle r="80" fill="url(#${uid}s)"/><circle r="80" fill="none" stroke="rgba(20,10,50,.55)" stroke-width="3.5"/>
+  <path d="M-52 -46 A70 70 0 0 1 -18 -70" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".55"/>
+  ${ringFront}${moon}</svg>`;
+}
+
+/* =========================================================
+   Critters — every story's hero, drawn in a 120×120 box, feet near y=112
+   ========================================================= */
+function critter(k, [c1, c2]){
+  const S=`stroke="${O}" stroke-width="3.5" stroke-linejoin="round"`;
+  const E=(y=64,dx=12,cx=60,b=1,col=O)=>`<g class="h-lid"><g class="h-open"><ellipse cx="${cx-dx}" cy="${y}" rx="${4.6*b}" ry="${6*b}" fill="${col}"/><ellipse cx="${cx+dx}" cy="${y}" rx="${4.6*b}" ry="${6*b}" fill="${col}"/><circle cx="${cx-dx+1.6*b}" cy="${y-2.4*b}" r="${1.9*b}" fill="#fff"/><circle cx="${cx+dx+1.6*b}" cy="${y-2.4*b}" r="${1.9*b}" fill="#fff"/></g></g><g class="h-shut" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round"><path d="M${cx-dx-5} ${y}q5 5 10 0M${cx+dx-5} ${y}q5 5 10 0"/></g>`;
+  const B=(y=76,dx=21,cx=60)=>`<ellipse cx="${cx-dx}" cy="${y}" rx="6" ry="3.5" fill="#ff7fa8" opacity=".55"/><ellipse cx="${cx+dx}" cy="${y}" rx="6" ry="3.5" fill="#ff7fa8" opacity=".55"/>`;
+  const M=(y=77,cx=60,w=5)=>`<path d="M${cx-w} ${y}q${w} ${w} ${w*2} 0" fill="none" stroke="${O}" stroke-width="3" stroke-linecap="round"/>`;
+  const body=(rx=34,ry=32,cy=78,fill=c1)=>`<ellipse cx="60" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}" ${S}/>`;
+  const belly=(rx=19,ry=15,cy=90)=>`<ellipse cx="60" cy="${cy}" rx="${rx}" ry="${ry}" fill="${c2}"/>`;
+  const feet=(c=c1)=>`<ellipse cx="45" cy="110" rx="10" ry="5.5" fill="${c}" ${S}/><ellipse cx="75" cy="110" rx="10" ry="5.5" fill="${c}" ${S}/>`;
+  const arms=(c=c1)=>`<ellipse cx="25" cy="88" rx="7" ry="11" fill="${c}" ${S} transform="rotate(25 25 88)"/><g class="h-arm"><ellipse cx="95" cy="88" rx="7" ry="11" fill="${c}" ${S} transform="rotate(-25 95 88)"/></g>`;
+  const whisk=`<g stroke="${O}" stroke-opacity=".5" stroke-width="1.6" stroke-linecap="round"><path d="M44 76l-16-3M44 80l-15 2M76 76l16-3M76 80l15 2"/></g>`;
+  const thick=(d,c,w=12)=>`<path d="${d}" fill="none" stroke="${O}" stroke-width="${w}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="${w-5}" stroke-linecap="round"/>`;
+  switch(k){
+    case 'bear': return feet()+`<circle cx="35" cy="50" r="11" fill="${c1}" ${S}/><circle cx="35" cy="50" r="5" fill="${c2}"/><circle cx="85" cy="50" r="11" fill="${c1}" ${S}/><circle cx="85" cy="50" r="5" fill="${c2}"/>`+body()+belly()+arms()+E()+`<ellipse cx="60" cy="77" rx="10" ry="7" fill="${c2}"/><ellipse cx="60" cy="73.5" rx="4" ry="3" fill="${O}"/>`+B(75,23)+M(80,60,4);
+    case 'cat': case 'fox': {
+      const tail = k==='fox'
+        ? `<g class="h-tail"><ellipse cx="100" cy="84" rx="11" ry="24" fill="${c1}" ${S} transform="rotate(35 100 84)"/><ellipse cx="109" cy="68" rx="6" ry="9" fill="#fff" transform="rotate(35 109 68)"/></g>`
+        : `<g class="h-tail">${thick('M86 100 Q112 96 106 64',c1)}</g>`;
+      return tail+feet()+`<path d="M32 62 L36 30 L56 50Z" fill="${c1}" ${S}/><path d="M88 62 L84 30 L64 50Z" fill="${c1}" ${S}/><path d="M38 52 L39 38 L48 48Z" fill="#ffb3cf"/><path d="M82 52 L81 38 L72 48Z" fill="#ffb3cf"/>`+body()+belly()+(k==='fox'?`<ellipse cx="60" cy="80" rx="17" ry="11" fill="#fff"/>`:'')+arms()+E()+`<path d="M57 72h6l-3 3.5z" fill="#ff7fa8" stroke="${O}" stroke-width="1.6"/>`+whisk+B(76,23)+M(79,60,4);
+    }
+    case 'mouse': return `<path d="M88 104 Q116 100 108 80" fill="none" stroke="#ffb3cf" stroke-width="3" stroke-linecap="round"/>`+feet()+`<circle cx="30" cy="50" r="17" fill="${c1}" ${S}/><circle cx="30" cy="50" r="9" fill="#ffb3cf"/><circle cx="90" cy="50" r="17" fill="${c1}" ${S}/><circle cx="90" cy="50" r="9" fill="#ffb3cf"/>`+body()+belly()+arms()+E()+`<circle cx="60" cy="74" r="4" fill="#ff7fa8" stroke="${O}" stroke-width="1.6"/>`+whisk+B(76,23)+M(80,60,4);
+    case 'owl': return feet('#ffb35c')+`<g class="h-wing"><ellipse cx="24" cy="82" rx="10" ry="22" fill="${c2}" ${S} transform="rotate(15 24 82)"/></g><g class="h-wing r"><ellipse cx="96" cy="82" rx="10" ry="22" fill="${c2}" ${S} transform="rotate(-15 96 82)"/></g><path d="M30 56 L28 34 L46 48Z" fill="${c1}" ${S}/><path d="M90 56 L92 34 L74 48Z" fill="${c1}" ${S}/>`+body(34,34,76)+belly(20,17,92)+`<path d="M48 90q4 4 8 0M60 94q4 4 8 0M52 100q4 4 8 0" fill="none" stroke="${O}" stroke-opacity=".35" stroke-width="2"/><circle cx="47" cy="64" r="12" fill="#fff" ${S}/><circle cx="73" cy="64" r="12" fill="#fff" ${S}/><path d="M59 64h2" stroke="${O}" stroke-width="3"/>`+E(64,13,60,1.05)+`<path d="M55 74h10l-5 8z" fill="#ffb35c" ${S}/>`;
+    case 'bird': return `<path d="M20 92 L4 82 L8 100Z" fill="${c1}" ${S}/>`+feet('#ffb35c')+thick('M56 48 Q52 32 62 26',c1,8)+thick('M62 48 Q66 34 76 32',c1,8)+body()+belly()+`<g class="h-wing"><ellipse cx="26" cy="84" rx="9" ry="17" fill="${c1}" ${S} transform="rotate(30 26 84)"/></g><g class="h-arm"><ellipse cx="94" cy="84" rx="9" ry="17" fill="${c1}" ${S} transform="rotate(-30 94 84)"/></g>`+E()+`<path d="M54 72h12l-6 7z" fill="#ffb35c" ${S}/>`+B(75,23);
+    case 'penguin': return feet('#ffb35c')+body(34,34,76)+`<ellipse cx="60" cy="82" rx="24" ry="26" fill="${c2}"/><path d="M36 58 Q60 38 84 58 Q72 66 60 60 Q48 66 36 58Z" fill="${c1}"/>`+arms(c1)+`<path d="M32 96 Q60 106 88 96 L88 104 Q60 114 32 104Z" fill="#ff4d6d" ${S}/><path d="M76 102 l6 13 l8 -2 l-4 -13z" fill="#ff4d6d" ${S}/>`+E(66,11)+`<path d="M54 74h12l-6 7z" fill="#ffb35c" ${S}/>`+B(78,20);
+    case 'fish': return `<g class="h-spout"><path d="M60 50 Q56 34 46 30 M60 50 Q60 30 60 24 M60 50 Q64 34 74 30" fill="none" stroke="#dff7ff" stroke-width="4" stroke-linecap="round"/></g><g class="h-tail"><path d="M26 82 L4 62 Q10 82 4 102Z" fill="${c1}" ${S}/></g><path d="M50 52 Q60 40 72 54Z" fill="${c1}" ${S}/>`+body(40,30,82)+`<ellipse cx="62" cy="94" rx="26" ry="12" fill="${c2}"/><path d="M40 92 Q62 100 84 92" fill="none" stroke="${O}" stroke-opacity=".2" stroke-width="2"/><g class="h-arm"><ellipse cx="92" cy="94" rx="6" ry="11" fill="${c1}" ${S} transform="rotate(-40 92 94)"/></g>`+E(72,12,66)+B(82,20,66)+M(84,66,5);
+    case 'robot': return `<line x1="60" y1="46" x2="60" y2="30" stroke="${O}" stroke-width="3.5"/><circle class="h-bulb" cx="60" cy="27" r="6" fill="#ff5b7f" ${S}/><circle cx="44" cy="111" r="7" fill="#6b7a99" ${S}/><circle cx="76" cy="111" r="7" fill="#6b7a99" ${S}/><rect x="30" y="46" width="60" height="62" rx="16" fill="${c1}" ${S}/><rect x="37" y="54" width="46" height="30" rx="9" fill="#23305c" ${S}/>`+E(67,11,60,.9,'#7fffd4')+`<path d="M53 76q7 5 14 0" fill="none" stroke="#7fffd4" stroke-width="2.6" stroke-linecap="round"/><circle cx="44" cy="96" r="3" fill="${c2}"/><circle cx="60" cy="96" r="3" fill="#ffd166"/><circle cx="76" cy="96" r="3" fill="${c2}"/><rect x="18" y="72" width="12" height="24" rx="6" fill="${c1}" ${S}/><g class="h-arm"><rect x="90" y="72" width="12" height="24" rx="6" fill="${c1}" ${S}/></g>`;
+    case 'hedgehog': { let sp=''; for(let i=0;i<12;i++){ const a=Math.PI*(0.98+i*0.095), b=a+0.1;
+        sp+=`<polygon points="${(60+Math.cos(a)*36).toFixed(1)},${(76+Math.sin(a)*34).toFixed(1)} ${(60+Math.cos(a+.05)*54).toFixed(1)},${(76+Math.sin(a+.05)*52).toFixed(1)} ${(60+Math.cos(b)*36).toFixed(1)},${(76+Math.sin(b)*34).toFixed(1)}" fill="#8a5a3c" ${S}/>`; }
+      return feet()+sp+body()+belly()+arms()+E()+`<circle cx="60" cy="75" r="4.5" fill="${O}"/>`+B()+M(80,60,4); }
+    case 'dragon': case 'dino': {
+      const wings = k==='dragon' ? `<g class="h-wing"><path d="M30 70 L4 44 L10 64 L0 70 L14 80Z" fill="${c2}" ${S}/></g><g class="h-wing r"><path d="M90 70 L116 44 L110 64 L120 70 L106 80Z" fill="${c2}" ${S}/></g>` : '';
+      const top = k==='dino' ? `<path d="M36 54 L42 38 L50 50 L58 32 L66 48 L76 36 L82 54Z" fill="${c2}" ${S}/>` : `<path d="M44 50 Q40 34 46 28 Q48 40 53 46Z" fill="#ffe36b" ${S}/><path d="M76 50 Q80 34 74 28 Q72 40 67 46Z" fill="#ffe36b" ${S}/>`;
+      return `<g class="h-tail">${thick('M84 100 Q112 104 112 78',c1,14)}<path d="M106 80 L116 70 L118 84Z" fill="${c2}" ${S}/></g>`+wings+feet()+top+body()+belly(20,16,92)+`<path d="M46 88h28M48 95h24" stroke="${O}" stroke-opacity=".25" stroke-width="2"/>`+arms()+E()+`<circle cx="56" cy="74" r="1.8" fill="${O}"/><circle cx="64" cy="74" r="1.8" fill="${O}"/>`+B()+M(80,60,5); }
+    case 'bug': return `<line x1="50" y1="50" x2="42" y2="30" stroke="${O}" stroke-width="3"/><line x1="70" y1="50" x2="78" y2="30" stroke="${O}" stroke-width="3"/><circle cx="42" cy="30" r="4.5" fill="${c2}" ${S}/><circle cx="78" cy="30" r="4.5" fill="${c2}" ${S}/><g class="h-wing"><ellipse cx="28" cy="66" rx="16" ry="24" fill="rgba(255,255,255,.6)" ${S} transform="rotate(-25 28 66)"/></g><g class="h-wing r"><ellipse cx="92" cy="66" rx="16" ry="24" fill="rgba(255,255,255,.6)" ${S} transform="rotate(25 92 66)"/></g><circle class="h-glow" cx="60" cy="102" r="20" fill="${c2}" opacity=".6"/>`+body(30,30,76)+`<ellipse cx="60" cy="98" rx="22" ry="10" fill="${c2}" ${S}/>`+E(70,11)+B(78,19)+M(82,60,4);
+    case 'turtle': return `<ellipse cx="30" cy="104" rx="10" ry="7" fill="${c2}" ${S}/><path d="M14 94 Q16 40 60 38 Q104 40 106 94Z" fill="${c1}" ${S}/><path d="M40 58 l10 -9 h20 l10 9 l-10 9 h-20z M24 84 l12 -8 M96 84 l-12 -8" fill="none" stroke="${O}" stroke-opacity=".3" stroke-width="3"/><ellipse cx="60" cy="84" rx="26" ry="23" fill="${c2}" ${S}/>`+E(80,10)+B(90,17)+M(92,60,4)+`<g class="h-arm"><ellipse cx="96" cy="100" rx="10" ry="7" fill="${c2}" ${S}/></g><ellipse cx="46" cy="110" rx="9" ry="5" fill="${c2}" ${S}/><ellipse cx="74" cy="110" rx="9" ry="5" fill="${c2}" ${S}/>`;
+    case 'snail': return `<path d="M12 111 Q60 98 106 108 Q114 112 104 113 H16 Q8 113 12 111Z" fill="${c2}" ${S}/><line x1="88" y1="64" x2="82" y2="44" stroke="${O}" stroke-width="3"/><line x1="100" y1="64" x2="106" y2="44" stroke="${O}" stroke-width="3"/><ellipse cx="94" cy="86" rx="15" ry="24" fill="${c2}" ${S}/><circle cx="46" cy="78" r="30" fill="${c1}" ${S}/><path d="M46 78 m0 -4 a4 4 0 1 1 -4 6 a10 10 0 1 1 14 -12 a18 18 0 1 1 -26 18" fill="none" stroke="${c2}" stroke-width="4" stroke-linecap="round"/><circle cx="82" cy="42" r="7" fill="#fff" ${S}/><circle cx="106" cy="42" r="7" fill="#fff" ${S}/>`+E(42,12,94,.7)+B(90,9,94)+M(95,94,4);
+    case 'frog': return feet()+body(40,28,82)+belly(24,13,94)+`<circle cx="42" cy="54" r="15" fill="${c1}" ${S}/><circle cx="78" cy="54" r="15" fill="${c1}" ${S}/><circle cx="42" cy="54" r="10" fill="#fff"/><circle cx="78" cy="54" r="10" fill="#fff"/>`+arms()+E(55,18,60,1.1)+B(80,26)+`<path d="M42 78 Q60 92 78 78" fill="none" stroke="${O}" stroke-width="3" stroke-linecap="round"/>`;
+    case 'lamb': { const pf=[[34,62],[48,50],[64,46],[80,52],[90,66],[92,84],[84,100],[66,106],[48,104],[34,96],[28,80],[60,78]];
+      const fl=pf.map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${i===11?30:15}" fill="${c1}" stroke="${O}" stroke-width="7"/>`).join('')+pf.map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${i===11?30:15}" fill="${c1}"/>`).join('');
+      return feet('#6b5a4a')+fl+`<ellipse cx="34" cy="72" rx="10" ry="6" fill="${c2}" ${S} transform="rotate(-25 34 72)"/><ellipse cx="86" cy="72" rx="10" ry="6" fill="${c2}" ${S} transform="rotate(25 86 72)"/><ellipse cx="60" cy="80" rx="20" ry="19" fill="${c2}" ${S}/><circle cx="53" cy="58" r="8" fill="${c1}"/><circle cx="64" cy="56" r="8" fill="${c1}"/>`+E(78,8)+B(87,14)+M(88,60,4)+`<g class="h-arm"><ellipse cx="96" cy="94" rx="7" ry="10" fill="${c1}" ${S} transform="rotate(-25 96 94)"/></g>`; }
+    case 'octopus': { let t=''; for(let i=0;i<5;i++){ const x=34+i*13; t+=`<g class="h-tent" style="animation-delay:-${(i*.3).toFixed(1)}s">${thick(`M${x} 88 Q${x-8} 100 ${x} 108 Q${x+6} 114 ${x-2} 116`,c1,11)}</g>`; }
+      return t+`<g class="h-arm">${thick('M90 86 Q112 76 106 56',c1,11)}</g><ellipse cx="60" cy="66" rx="34" ry="32" fill="${c1}" ${S}/><circle cx="46" cy="46" r="4" fill="#fff" opacity=".5"/><circle cx="78" cy="50" r="3" fill="${c2}"/><circle cx="72" cy="42" r="2" fill="${c2}"/>`+E(68,12)+B(78,21)+M(80,60,5); }
+  }
+  return '';
+}
+const heroSVG = (h, cls='') => `<g class="hero k-${h.k} ${cls}">${critter(h.k, h.c)}</g>`;
+
+/* =========================================================
+   World props (bottom-centre at 0,0)
+   ========================================================= */
+const SK=`stroke="${O}" stroke-width="4" stroke-linejoin="round"`;
+const blob=(cs,fill)=>cs.map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${O}" stroke-width="8"/>`).join('')+cs.map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}"/>`).join('');
+const thickP=(d,c,w=14)=>`<path d="${d}" fill="none" stroke="${O}" stroke-width="${w}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="${w-7}" stroke-linecap="round"/>`;
+const PROPS={
+  tree:(c)=>`<rect x="-9" y="-78" width="18" height="80" rx="6" fill="#9a6440" ${SK}/><g class="sway">${blob([[0,-122,44],[-34,-96,30],[34,-96,30],[0,-90,30]],c)}<circle cx="-14" cy="-140" r="10" fill="#fff" opacity=".35"/><circle cx="18" cy="-110" r="5" fill="#ff5b7f"/><circle cx="-22" cy="-100" r="5" fill="#ff5b7f"/><circle cx="8" cy="-138" r="4" fill="#ff5b7f"/></g>`,
+  pine:(c)=>`<rect x="-7" y="-40" width="14" height="42" fill="#8a5a3c" ${SK}/><g class="sway"><path d="M-46 -34 L0 -96 L46 -34Z" fill="${c}" ${SK}/><path d="M-38 -74 L0 -130 L38 -74Z" fill="${c}" ${SK}/><path d="M-28 -110 L0 -160 L28 -110Z" fill="${c}" ${SK}/><path d="M-12 -140 L0 -160 L12 -140 Q0 -134 -12 -140Z" fill="#fff" opacity=".9"/></g>`,
+  lollipop:(c)=>`<rect x="-4" y="-120" width="8" height="122" rx="4" fill="#fff" ${SK}/><g class="sway"><circle cy="-150" r="38" fill="${c}" ${SK}/><path d="M0 -150 m0 -4 a4 4 0 1 1 -4 6 a12 12 0 1 1 16 -12 a22 22 0 1 1 -30 22" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/></g>`,
+  coral:(c)=>`<g class="sway">${thickP('M0 0V-70M0-40Q-26-48-30-92M0-60Q22-70 26-110M-2-20Q20-24 30-52',c,20)}<circle cx="-30" cy="-92" r="7" fill="#fff" opacity=".4"/></g>`,
+  seaweed:(c)=>`<g class="sway">${thickP('M-16 0C-34-40 0-70-18-120M4 0C20-40-10-80 10-140M20 0C34-30 14-60 28-96','#3fbf7f',16)}</g>`,
+  mushroom:(c)=>`<ellipse class="w-glow" cx="0" cy="-70" rx="84" ry="72" fill="${c}" opacity=".35"/><rect x="-13" y="-62" width="26" height="64" rx="12" fill="#fff4e0" ${SK}/><g class="sway"><path d="M-58 -56 Q0 -132 58 -56 Q0 -44 -58 -56Z" fill="${c}" ${SK}/><circle cx="-24" cy="-80" r="7" fill="#fff" opacity=".9"/><circle cx="10" cy="-94" r="9" fill="#fff" opacity=".9"/><circle cx="32" cy="-70" r="6" fill="#fff" opacity=".9"/></g>`,
+  crystal:(c)=>`<path d="M-44 0 L-52 -60 L-34 -104 L-18 -58 L-22 0Z" fill="${c}" ${SK}/><path d="M-20 0 L-14 -90 L4 -150 L22 -90 L20 0Z" fill="${c}" ${SK}/><path d="M18 0 L28 -64 L46 -96 L56 -54 L44 0Z" fill="${c}" ${SK}/><path d="M4 -146 V-4 M-34 -100 V-4 M46 -92 L42 -4" stroke="#fff" stroke-opacity=".55" stroke-width="4"/>`,
+  flower:(c)=>{ let p=''; for(let i=0;i<6;i++){ const a=i*60; p+=`<ellipse cx="0" cy="-110" rx="11" ry="16" fill="${c}" ${SK} transform="rotate(${a} 0 -92)"/>`; }
+    return `${thickP('M0 0 Q-8 -44 0 -84','#4fae5a',11)}<ellipse cx="-16" cy="-40" rx="14" ry="7" fill="#4fae5a" ${SK} transform="rotate(-30 -16 -40)"/><g class="sway">${p}<circle cy="-92" r="12" fill="#ffd166" ${SK}/><path d="M-5 -91q5 4 10 0" fill="none" stroke="${O}" stroke-width="2.4" stroke-linecap="round"/></g>`; },
+  clocktower:()=>`<rect x="-34" y="-196" width="68" height="198" rx="6" fill="#e8ad3c" ${SK}/><path d="M-44 -192 L0 -250 L44 -192Z" fill="#b5532e" ${SK}/><circle cy="-150" r="26" fill="#fff8e0" ${SK}/><g class="w-hand"><rect x="-2" y="-168" width="4" height="18" rx="2" fill="${O}"/></g><g class="w-hand2"><rect x="-2" y="-162" width="4" height="12" rx="2" fill="#b5532e"/></g><circle cy="-150" r="3.5" fill="${O}"/><rect x="-12" y="-80" width="24" height="34" rx="12" fill="#ffe68a" ${SK}/>`,
+  house:(c)=>`<rect x="18" y="-126" width="14" height="30" fill="#b5532e" ${SK}/>${[0,1,2].map(i=>`<circle class="w-sm" cx="25" cy="-136" r="7" fill="#fff" style="animation-delay:-${(i*1.1).toFixed(1)}s"/>`).join('')}<rect x="-40" y="-72" width="80" height="74" rx="6" fill="${c}" ${SK}/><path d="M-54 -66 L0 -118 L54 -66Z" fill="#ff6b6b" ${SK}/><rect class="w-win" x="-28" y="-56" width="22" height="22" rx="4" fill="#ffe68a" ${SK}/><path d="M-17 -56V-34M-28 -45H-6" stroke="${O}" stroke-width="3"/><rect x="6" y="-42" width="22" height="44" rx="10" fill="#9a6440" ${SK}/>`,
+  books:(c,pc)=>[[-40,0,64,pc[0]],[-34,-18,58,pc[1%pc.length]],[-44,-36,70,pc[2%pc.length]],[-30,-54,50,pc[0]]].map(([x,y,w,f])=>`<rect x="${x}" y="${y-18}" width="${w}" height="18" rx="4" fill="${f}" ${SK}/><rect x="${x+6}" y="${y-12}" width="${w-12}" height="4" fill="#fff" opacity=".5"/>`).join(''),
+  cloudprop:()=>`<g class="w-bob"><path d="M-66 -120 Q0 -40 66 -120Z" fill="#9a6440" ${SK}/><path d="M-70 -122 Q0 -140 70 -122 Q0 -108 -70 -122Z" fill="#7fd47a" ${SK}/>${blob([[-30,-150,20],[0,-160,26],[30,-148,18]],'#fff')}</g>`,
+  volcano:(c)=>`${[0,1,2].map(i=>`<circle class="w-sm" cx="0" cy="-132" r="13" fill="#e8dcd6" style="animation-delay:-${(i*1.1).toFixed(1)}s"/>`).join('')}<path d="M-100 0 L-30 -120 Q0 -128 30 -120 L100 0Z" fill="${c}" ${SK}/><path d="M-30 -120 Q0 -110 30 -120 L20 -100 Q10 -80 4 -104 Q-6 -70 -12 -102 Q-20 -92 -30 -120Z" fill="#ffb347" ${SK}/><ellipse class="w-glow" cx="0" cy="-124" rx="42" ry="16" fill="#ffe36b" opacity=".6"/>`,
+  balloon:(c,pc)=>`<g class="w-bob"><path d="M0 0 Q-10 -60 -22 -112 M0 0 Q4 -70 2 -136 M0 0 Q14 -60 24 -104" fill="none" stroke="${O}" stroke-width="2"/>${[[-22,-112,pc[0]],[24,-104,pc[1%pc.length]],[2,-136,pc[2%pc.length]]].map(([x,y,f])=>`<ellipse cx="${x}" cy="${y-24}" rx="20" ry="25" fill="${f}" ${SK}/><ellipse cx="${x-7}" cy="${y-32}" rx="5" ry="8" fill="#fff" opacity=".5"/>`).join('')}</g>`,
+  cactus:()=>`<g class="sway"><path d="M-14 0 V-104 a14 14 0 0 1 28 0 V0Z" fill="#4fae5a" ${SK}/><path d="M-14 -50 H-30 a8 8 0 0 1 -8 -8 V-80 a8 8 0 0 1 16 0 V-66 H-14" fill="#4fae5a" ${SK}/><path d="M14 -64 H30 a8 8 0 0 0 8 -8 V-92 a8 8 0 0 0 -16 0 V-80 H14" fill="#4fae5a" ${SK}/><circle cy="-122" r="8" fill="#ff6fae" ${SK}/></g>`,
+  castle:()=>{ const t=(x,y,w,h)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#f3c984" ${SK}/>`+[0,1,2].map(i=>`<rect x="${x+i*w/3+2}" y="${y-10}" width="${w/3-4}" height="12" fill="#f3c984" ${SK}/>`).join('');
+    return t(-72,-92,36,94)+t(36,-92,36,94)+t(-40,-72,80,74)+t(-18,-132,36,62)+`<path d="M-12 2 V-26 a12 12 0 0 1 24 0 V2Z" fill="#b5773e" ${SK}/><rect x="-6" y="-112" width="12" height="16" rx="6" fill="#ffe68a"/><line x1="0" y1="-142" x2="0" y2="-176" stroke="${O}" stroke-width="4"/><g class="w-flag"><path d="M0 -176 L28 -167 L0 -158Z" fill="#ff5b7f" ${SK}/></g>`; },
+  blocks:(c,pc)=>[[-62,0,pc[0],'أ'],[-20,0,pc[1%pc.length],'ب'],[22,0,pc[2%pc.length],'ت'],[-41,-42,pc[3%pc.length],'ث'],[1,-42,pc[0],'ج'],[-20,-84,pc[1%pc.length],'ح']].map(([x,y,f,l])=>`<rect x="${x}" y="${y-40}" width="40" height="40" rx="6" fill="${f}" ${SK}/><text x="${x+20}" y="${y-10}" text-anchor="middle" font-family="Lalezar, Tahoma" font-size="26" fill="#fff" stroke="${O}" stroke-width="3" paint-order="stroke">${l}</text>`).join(''),
+  lighthouse:()=>`<g class="w-beam"><path d="M0 -176 L230 -210 L230 -142Z" fill="#fff6b0" opacity=".7"/></g><path d="M-30 0 L-20 -150 H20 L30 0Z" fill="#fff" ${SK}/><path d="M-27 -30 H27 L26 -52 H-26Z M-24 -92 H24 L23 -114 H-23Z" fill="#ff5b6b"/><rect x="-18" y="-186" width="36" height="36" rx="4" fill="#ffe36b" ${SK}/><path d="M-24 -186 L0 -212 L24 -186Z" fill="#ff5b6b" ${SK}/><path d="M-30 0 L-20 -150 H20 L30 0" fill="none" ${SK}/>`,
+  rock:()=>blob([[-24,-18,22],[10,-26,28],[36,-14,16]],'#9aa3b8')
+};
+const BIG=['lighthouse','clocktower','castle','volcano'];
+
+/* =========================================================
+   World builder — the cartoon garden behind the story
+   ========================================================= */
+let worldSt=null;
+function buildWorld(st, enterDelay=null){
+  worldSt=st;
+  const w=st.world, r=rng(st.seed*7+3), R=(a,b)=>a+r()*(b-a), pick=a=>a[Math.floor(r()*a.length)], pc=w.pc;
+  const W=Math.round(Math.min(1500,Math.max(440,700*innerWidth/Math.max(1,innerHeight)))), H=700;
+  const smalls=w.props.filter(p=>!BIG.includes(p)); const sm=smalls.length?smalls:w.props;
+  const prop=(type,x,y,s)=>`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${s.toFixed(2)})"><g class="w-prop">${PROPS[type](pick(pc),pc)}</g></g>`;
+  const hill=(base,amp,n)=>{ let d=`M-60 ${base}`; const sw=(W+120)/n; for(let i=0;i<n;i++){ d+=` Q${(-60+sw*(i+.5)).toFixed(0)} ${(base-amp*(.5+r())).toFixed(0)} ${(-60+sw*(i+1)).toFixed(0)} ${(base+(r()-.5)*amp*.5).toFixed(0)}`; } return d+` L${W+60} ${H+40} L-60 ${H+40}Z`; };
+  const wave=(base,a)=>{ let d=`M-100 ${base}`; for(let x=-100;x<W+200;x+=50) d+=` q25 ${-a} 50 0`; return d+` L${W+200} ${H+40} L-100 ${H+40}Z`; };
+  let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice"><defs>
+    <linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${w.sky[0]}"/><stop offset="1" stop-color="${w.sky[1]}"/></linearGradient>
+    <linearGradient id="wnight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070620"/><stop offset="1" stop-color="#2a2270"/></linearGradient>
+    <radialGradient id="wglow"><stop offset="0" stop-color="#fff8c4" stop-opacity=".85"/><stop offset="1" stop-color="#fff8c4" stop-opacity="0"/></radialGradient>
+    <linearGradient id="aur1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fffc4" stop-opacity="0"/><stop offset=".5" stop-color="#7fffc4" stop-opacity=".75"/><stop offset="1" stop-color="#7fffc4" stop-opacity="0"/></linearGradient>
+    <linearGradient id="aur2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8fe0" stop-opacity="0"/><stop offset=".5" stop-color="#c49bff" stop-opacity=".6"/><stop offset="1" stop-color="#ff8fe0" stop-opacity="0"/></linearGradient>
+  </defs><rect width="${W}" height="${H}" fill="url(#wsky)"/><rect class="w-skynight" width="${W}" height="${H}" fill="url(#wnight)"/>`;
+  s+=`<g class="w-stars">`+Array.from({length:90},()=>`<circle class="w-tw" cx="${R(0,W).toFixed(0)}" cy="${R(0,440).toFixed(0)}" r="${R(.8,2.6).toFixed(1)}" fill="#fff" style="animation-delay:-${R(0,3).toFixed(1)}s"/>`).join('')+`</g>`;
+  if(w.aurora) s+=`<g class="w-aurora"><path class="w-aur" d="M-40 60 Q${W*.25} 10 ${W*.5} 80 T${W+40} 50 V230 Q${W*.75} 170 ${W*.5} 230 T-40 210Z" fill="url(#aur1)"/><path class="w-aur" style="animation-delay:-3s" d="M-40 130 Q${W*.3} 90 ${W*.6} 150 T${W+40} 120 V280 Q${W*.7} 230 ${W*.45} 280 T-40 270Z" fill="url(#aur2)"/></g>`;
+  s+=`<g transform="translate(${(W*.18).toFixed(0)} 150)"><g class="w-sun"><circle r="100" fill="url(#wglow)"/><g class="w-rays">${Array.from({length:10},(_,i)=>`<rect x="-5" y="-78" width="10" height="20" rx="5" fill="#ffe36b" transform="rotate(${i*36})"/>`).join('')}</g><circle r="46" fill="#fff1a8" ${SK}/><path d="M-17 -4q5 -6 10 0M7 -4q5 -6 10 0M-12 10q12 11 24 0" fill="none" stroke="${O}" stroke-width="3.5" stroke-linecap="round"/><ellipse cx="-24" cy="8" rx="6" ry="3.5" fill="#ff9fbf" opacity=".7"/><ellipse cx="24" cy="8" rx="6" ry="3.5" fill="#ff9fbf" opacity=".7"/></g></g>`;
+  s+=`<g transform="translate(${(W*.8).toFixed(0)} 130)"><g class="w-moon"><circle r="100" fill="url(#wglow)"/><path d="M8 -44a44 44 0 1 0 36 70a36 36 0 1 1 -36 -70z" fill="#fff4c4" ${SK}/><path d="M-14 2q5 5 10 0" fill="none" stroke="${O}" stroke-width="3" stroke-linecap="round"/><path d="M-10 16q5 3 9 0" fill="none" stroke="${O}" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="-20" cy="12" rx="5" ry="3" fill="#ff9fbf" opacity=".7"/><path d="M-6 -42 Q16 -84 50 -64 Q30 -58 34 -36Z" fill="#6f5de8" ${SK}/><circle cx="52" cy="-64" r="7" fill="#fff" ${SK}/></g></g>`;
+  if(w.rainbow) s+=`<g class="w-day">`+['#ff5b6b','#ffa94d','#ffe36b','#6fcf5a','#5ab0ff','#9b7bff'].map((c,i)=>{const rr=360-i*16,cx=W/2,cy=560;return `<path d="M${cx-rr} ${cy} A${rr} ${rr} 0 0 1 ${cx+rr} ${cy}" fill="none" stroke="${c}" stroke-width="16" opacity=".8"/>`;}).join('')+`</g>`;
+  s+=`<g class="w-clouds">`+Array.from({length:5},(_,i)=>{const d=R(70,130),k=R(.7,1.3);return `<g transform="translate(0 ${R(60,300).toFixed(0)}) scale(${k.toFixed(2)})"><g class="w-cloud" style="--dw:${((W+500)/k).toFixed(0)}px;animation-duration:${d.toFixed(0)}s;animation-delay:-${R(0,d).toFixed(0)}s">${blob([[-40,0,24],[-8,-14,32],[28,-2,24],[0,8,22]],'#fff')}</g></g>`;}).join('')+`</g>`;
+  if(w.extras.includes('balloons')) s+=[0,1,2].map(i=>`<g transform="translate(${(W*(.15+i*.33)).toFixed(0)} ${(250+i%2*40).toFixed(0)}) scale(.5)"><g style="animation-delay:-${i*1.3}s" class="w-bob">${PROPS.balloon('',pc)}</g></g>`).join('');
+  s+=`<g class="w-day"><g transform="translate(0 ${R(150,230).toFixed(0)})"><g class="w-flyx" style="--dw:${W+200}px;animation-duration:26s;animation-delay:-${R(0,26).toFixed(0)}s">${[[0,0],[-26,-12],[-26,12]].map(([x,y])=>`<g transform="translate(${x} ${y})"><path class="w-flap" d="M-12 0q6-8 12 0q6-8 12 0" fill="none" stroke="${O}" stroke-width="3" stroke-linecap="round"/></g>`).join('')}</g></g></g>`;
+  if(w.extras.includes('raincloud')) s+=`<g transform="translate(${(W*.28).toFixed(0)} 200)"><g class="w-bob">${blob([[-40,0,26],[-6,-16,34],[30,-2,26],[0,10,24]],'#b8c2d8')}<path d="M-16 -2q5 5 10 0M8 -2q5 5 10 0" fill="none" stroke="${O}" stroke-width="3" stroke-linecap="round"/><path d="M-4 10q5 4 10 0" fill="none" stroke="${O}" stroke-width="3" stroke-linecap="round"/>${[-30,-12,6,24].map((x,i)=>`<line class="w-rain" style="animation-delay:-${(i*.18).toFixed(2)}s" x1="${x}" y1="36" x2="${x-4}" y2="50" stroke="#7fb2ff" stroke-width="4" stroke-linecap="round"/>`).join('')}</g></g>`;
+  // far layer
+  const farD=hill(430,50,5);
+  s+=`<g class="w-far">`;
+  if(!w.water) [.05,.27,.5,.73,.95].forEach(f=>{ s+=prop(pick(w.props),W*f+R(-30,30),444,R(.34,.44)); });
+  s+=`<path d="${farD}" fill="${w.hills[0]}" stroke="rgba(43,29,82,.25)" stroke-width="5"/>`;
+  if(w.extras.includes('train')) s+=`<g transform="translate(0 404) scale(.62)"><g class="w-flyx rev" style="--dw:${((W+300)/.62).toFixed(0)}px;animation-duration:34s;animation-delay:-${R(0,34).toFixed(0)}s">${trainSVG()}</g></g>`;
+  s+=`</g>`;
+  // mid layer
+  s+=`<g class="w-mid">`;
+  if(w.water){ s+=`<g class="w-wave"><path d="${wave(500,12)}" fill="${w.hills[1]}" stroke="rgba(255,255,255,.5)" stroke-width="5"/></g>`; }
+  else { [.12,.38,.62,.88].forEach(f=>{ s+=prop(pick(sm),W*f+R(-40,40),518,R(.52,.68)); }); s+=`<path d="${hill(505,36,4)}" fill="${w.hills[1]}" stroke="rgba(43,29,82,.25)" stroke-width="5"/>`; }
+  if(w.extras.includes('bubbles')) s+=Array.from({length:10},()=>`<circle class="w-bub" style="animation-delay:-${R(0,5).toFixed(1)}s;animation-duration:${R(4,7).toFixed(1)}s" cx="${R(0,W).toFixed(0)}" cy="${R(600,700).toFixed(0)}" r="${R(4,10).toFixed(0)}" fill="rgba(255,255,255,.25)" stroke="#fff" stroke-width="2.5"/>`).join('');
+  s+=`</g>`;
+  // near layer
+  s+=`<g class="w-near">`;
+  s+=prop(w.props[0],W*.07,600,1)+prop(w.props[1]||w.props[0],W*.2,604,.78);
+  s+=prop(pick(sm),W*.95,600,.8);
+  s+=`<path d="${hill(580,22,3)}" fill="${w.hills[2]}" stroke="rgba(43,29,82,.3)" stroke-width="5"/>`;
+  const flowerCols=['#ff6f8f','#ffd166','#7fb2ff','#ffffff','#b18cff'];
+  for(let i=0;i<9;i++){ const x=R(20,W-20); s+=`<g transform="translate(${x.toFixed(0)} ${R(610,690).toFixed(0)}) scale(${R(.22,.32).toFixed(2)})"><g class="w-prop">${PROPS.flower(pick(flowerCols))}</g></g>`; }
+  for(let i=0;i<12;i++) s+=`<path d="M${R(0,W).toFixed(0)} ${R(605,695).toFixed(0)} q-4 -14 -10 -18 m10 18 q0 -16 0 -22 m0 22 q4 -14 10 -18" fill="none" stroke="rgba(43,29,82,.35)" stroke-width="3" stroke-linecap="round"/>`;
+  // butterflies or bees
+  const flyer=(bee)=>{ const col=bee?'#ffd166':pick(['#ff8fb1','#b18cff','#7fd4ff','#ffb35c']);
+    return `<g class="w-day"><g transform="translate(${R(W*.25,W*.6).toFixed(0)} ${R(470,560).toFixed(0)})"><g class="w-bfly" style="animation-delay:-${R(0,9).toFixed(1)}s;animation-duration:${R(8,12).toFixed(1)}s">
+      <g class="w-bw l"><ellipse cx="-9" cy="-2" rx="9" ry="12" fill="${bee?'rgba(255,255,255,.8)':col}" stroke="${O}" stroke-width="2.5"/></g><g class="w-bw r"><ellipse cx="9" cy="-2" rx="9" ry="12" fill="${bee?'rgba(255,255,255,.8)':col}" stroke="${O}" stroke-width="2.5"/></g>
+      ${bee?`<ellipse cx="0" cy="6" rx="9" ry="7" fill="#ffd166" stroke="${O}" stroke-width="2.5"/><path d="M-3 0v12M3 0v12" stroke="${O}" stroke-width="2.5"/>`:`<rect x="-2" y="-9" width="4" height="18" rx="2" fill="${O}"/>`}</g></g></g>`; };
+  s+=flyer(w.extras.includes('bees'))+flyer(w.extras.includes('bees'));
+  if(w.extras.includes('bees')) s+=flyer(true);
+  // hero
+  s+=`<g transform="translate(${(W*.8).toFixed(0)} 600) scale(1.35)"><g class="w-hero"><g transform="translate(-60 -114)">${heroSVG(st.hero)}</g></g></g>`;
+  s+=`</g>`;
+  if(w.extras.includes('petals')) s+=Array.from({length:14},()=>`<g transform="translate(${R(0,W+200).toFixed(0)} 0)"><ellipse class="w-petal" style="animation-duration:${R(8,14).toFixed(1)}s;animation-delay:-${R(0,14).toFixed(1)}s" cx="0" cy="0" rx="7" ry="4.5" fill="#ffc9dc" stroke="#e98fae" stroke-width="1.5"/></g>`).join('');
+  s+=`<path class="w-landnight" d="${farD}" fill="#0a0930"/>`;
+  s+=`<g class="w-nl">`+Array.from({length:16},()=>`<circle class="w-ff" style="animation-delay:-${R(0,4).toFixed(1)}s" cx="${R(0,W).toFixed(0)}" cy="${R(380,660).toFixed(0)}" r="${R(2.5,4.5).toFixed(1)}" fill="#fbff9a"/>`).join('')+`</g>`;
+  s+=`</svg>`;
+  const el=$('#world'); el.innerHTML=s;
+  if(enterDelay!==null) worldEnter(enterDelay);
+}
+function trainSVG(){
+  const star=(x,y)=>`<path transform="translate(${x} ${y}) scale(.9)" d="M0 -10l3 7 7 .6-5.4 4.6 1.7 7L0 5.4-6.3 9.2l1.7-7L-10-3.4l7-.6z" fill="#ffe36b" stroke="${O}" stroke-width="2"/>`;
+  let s=`<rect x="0" y="-40" width="70" height="38" rx="10" fill="#ff5b7f" ${SK}/><rect x="44" y="-66" width="26" height="30" rx="6" fill="#ff5b7f" ${SK}/><rect x="6" y="-58" width="12" height="22" fill="#6f5de8" ${SK}/><rect x="50" y="-60" width="14" height="12" rx="3" fill="#fff6b0" ${SK}/>`;
+  s+=[0,1,2].map(i=>`<circle class="w-sm" cx="12" cy="-66" r="8" fill="#fff" style="animation-delay:-${(i*1.1).toFixed(1)}s"/>`).join('');
+  for(let i=0;i<3;i++){ const x=80+i*78; s+=`<rect x="${x}" y="-40" width="70" height="38" rx="10" fill="${['#6f5de8','#3fb8d0','#ffb35c'][i]}" ${SK}/>`+star(x+22,-22)+star(x+48,-22)+`<circle cx="${x+16}" cy="0" r="8" fill="#555" ${SK}/><circle cx="${x+54}" cy="0" r="8" fill="#555" ${SK}/>`; }
+  s+=`<circle cx="16" cy="0" r="9" fill="#555" ${SK}/><circle cx="54" cy="0" r="9" fill="#555" ${SK}/>`;
+  return s;
+}
+function worldEnter(delay){
+  const svg=$('#world svg'); if(!svg) return;
+  [['.w-far',0],['.w-mid',140],['.w-near',280]].forEach(([sel,d])=>svg.querySelectorAll(sel).forEach(el=>el.animate(
+    [{transform:'translateY(460px)'},{transform:'translateY(-22px)',offset:.7},{transform:'none'}],{duration:dur(950),delay:dur(delay+d),easing:'cubic-bezier(.2,.8,.3,1)',fill:'backwards'})));
+  svg.querySelectorAll('.w-sun,.w-moon').forEach(el=>el.parentElement.animate([{opacity:0},{opacity:1}],{duration:dur(700),delay:dur(delay),fill:'backwards'}));
+  svg.querySelectorAll('.w-clouds').forEach(el=>el.animate([{transform:'scale(.2)',opacity:0},{transform:'none',opacity:1}],{duration:dur(900),delay:dur(delay+100),easing:'cubic-bezier(.2,1.4,.4,1)',fill:'backwards'}));
+  svg.querySelectorAll('.w-prop').forEach((el,k)=>el.animate(
+    [{transform:'scale(0)'},{transform:'scale(1.22,1.28)',offset:.55},{transform:'scale(.92,.9)',offset:.78},{transform:'none'}],{duration:dur(700),delay:dur(delay+520+k*38),easing:'ease-out',fill:'backwards'}));
+  const hero=svg.querySelector('.w-hero'); const hd=delay+1050;
+  hero.animate([{transform:'translateY(-760px) rotate(-20deg)'},{transform:'translateY(0) scale(1.35,.66)',offset:.6},{transform:'translateY(-46px) scale(.9,1.12)',offset:.78},{transform:'translateY(0) scale(1.06,.94)',offset:.9},{transform:'none'}],{duration:dur(950),delay:dur(hd),easing:'ease-in',fill:'backwards'});
+  setTimeout(()=>{ if(!hero.isConnected) return; const r=hero.getBoundingClientRect(); fxIntro.burst('cloud',12,(r.left+r.width/2)*DPR,r.bottom*DPR,{cols:['#fff'],speed:[120,380],up:40,scale:.45,life:[.6,1]});
+    heroEl()&&heroEl().classList.add('waving'); setTimeout(()=>heroEl()&&heroEl().classList.remove('waving'),2400); },dur(hd+570));
+}
+const heroEl=()=>$('#world .hero');
+function heroAct(name){
+  const g=$('#world .w-hero'), h=heroEl(); if(!g||!h) return;
+  const A={
+    jump:[{transform:'none'},{transform:'scale(1.12,.85)',offset:.15},{transform:'translateY(-90px) scale(.92,1.1)',offset:.5},{transform:'translateY(0) scale(1.15,.85)',offset:.82},{transform:'none'}],
+    spin:[{transform:'none'},{transform:'translateY(-70px) rotate(-180deg)',offset:.5},{transform:'translateY(0) rotate(-360deg)',offset:.85},{transform:'scale(1.1,.9)',offset:.93},{transform:'none'}],
+    surprise:[{transform:'none'},{transform:'scale(1.3) translateY(-20px)',offset:.2},{transform:'scale(1.25) translateY(-20px) rotate(6deg)',offset:.4},{transform:'scale(1.25) translateY(-20px) rotate(-6deg)',offset:.6},{transform:'none'}],
+    stretch:[{transform:'none'},{transform:'scale(.9,1.2)',offset:.4},{transform:'scale(.9,1.2)',offset:.6},{transform:'scale(1.1,.9)',offset:.85},{transform:'none'}]
+  };
+  if(name==='wave'){ h.classList.add('waving'); setTimeout(()=>h.classList.remove('waving'),2400); return; }
+  g.animate(A[name],{duration:dur(name==='stretch'?1400:900),easing:'ease-in-out'});
+  if(name==='surprise'||name==='spin'){ const r=g.getBoundingClientRect(); fxReader.burst('star',16,(r.left+r.width/2)*DPR,(r.top)*DPR,{cols:['#fff','#ffd166'],speed:[120,420],scale:.6}); }
+}
+function worldGust(){
+  $$('#world .w-near .w-prop, #world .w-mid .w-prop').forEach((el,k)=>el.animate([{transform:'none'},{transform:'rotate(-7deg) scale(1.04,.96)'},{transform:'rotate(5deg)'},{transform:'none'}],{duration:dur(900),delay:dur(k*25),easing:'ease-in-out'}));
+}
+
+/* =========================================================
+   Starfield with shooting stars and drifting far planets
+   ========================================================= */
+const sky = { c: $('#sky'), speed:.02, target:.02, stars:[], t:0, shoots:[], nextShoot:2.5, far:[] };
+sky.ctx = sky.c.getContext('2d');
+const STAR_COLS = ['#ffffff','#fff1c4','#d4e2ff','#ffd6ee'];
+function newStar(s, far){ s.x=rand(-1,1); s.y=rand(-1,1); s.z=far?1:rand(.05,1); s.ph=rand(0,6.3); s.col=STAR_COLS[(Math.random()*4)|0]; return s; }
+for(let i=0;i<420;i++) sky.stars.push(newStar({}));
+[['#ff9ccf',18,.12,.2],['#7fd4ff',11,.82,.3],['#ffd166',7,.55,.75],['#b18cff',13,.3,.85]].forEach(([c,r,x,y])=>sky.far.push({c,r,x,y,ring:r>12}));
+function sizeCanvas(c){ const b=c.getBoundingClientRect(); c.width=Math.max(1,b.width*DPR); c.height=Math.max(1,b.height*DPR); }
+sky.step = function(dt){
+  const {ctx,c} = this; this.t += dt;
+  this.speed += (this.target - this.speed) * Math.min(1, dt*2.2);
+  const W=c.width,H=c.height,cx=W/2,cy=H/2, sp=this.speed;
+  ctx.clearRect(0,0,W,H);
+  if(sp<.3) for(const p of this.far){ p.x-=dt*.004; if(p.x<-.1) p.x=1.1;
+    const x=p.x*W, y=p.y*H+Math.sin(this.t*.4+p.r)*6*DPR, r=p.r*DPR;
+    const g=ctx.createRadialGradient(x-r*.35,y-r*.35,r*.1,x,y,r); g.addColorStop(0,'#fff'); g.addColorStop(.35,p.c); g.addColorStop(1,'#2b1d52');
+    ctx.globalAlpha=.55; ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,6.283); ctx.fill();
+    if(p.ring){ ctx.strokeStyle=p.c; ctx.lineWidth=2*DPR; ctx.beginPath(); ctx.ellipse(x,y,r*1.8,r*.45,-.3,0,6.283); ctx.stroke(); } }
+  for(const s of this.stars){
+    s.z -= sp*dt;
+    if(s.z <= .03) newStar(s, true);
+    const px = cx + s.x*W*.6/s.z, py = cy + s.y*H*.6/s.z;
+    if(px<-20||px>W+20||py<-20||py>H+20) continue;
+    const size = (1.35 - s.z) * 1.7 * DPR;
+    ctx.globalAlpha = Math.min(1, (1 - s.z) * 1.6) * (sp > .3 ? 1 : .55 + .45*Math.sin(this.t*1.8 + s.ph));
+    if(sp > .3){
+      const z2 = s.z + sp*.06, qx = cx + s.x*W*.6/z2, qy = cy + s.y*H*.6/z2;
+      ctx.strokeStyle=s.col; ctx.lineWidth=size; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(qx,qy); ctx.lineTo(px,py); ctx.stroke();
+    } else { ctx.fillStyle=s.col; ctx.beginPath(); ctx.arc(px,py,size,0,6.283); ctx.fill(); }
+  }
+  if(!reduce && sp < .3){ this.nextShoot -= dt; if(this.nextShoot<=0){ this.nextShoot=rand(2,5);
+    const a=rand(.35,.7)+(Math.random()<.5?0:Math.PI-1.05); this.shoots.push({x:rand(.1,.9)*W,y:rand(0,.35)*H,vx:Math.cos(a)*900*DPR,vy:Math.sin(a)*900*DPR,life:0}); } }
+  this.shoots = this.shoots.filter(s=>{ s.life+=dt; s.x+=s.vx*dt; s.y+=s.vy*dt; if(s.life>.9) return false;
+    const a=Math.sin(s.life/.9*Math.PI), g=ctx.createLinearGradient(s.x,s.y,s.x-s.vx*.12,s.y-s.vy*.12);
+    g.addColorStop(0,'rgba(255,255,255,'+a+')'); g.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.globalAlpha=1; ctx.strokeStyle=g; ctx.lineWidth=2.4*DPR; ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(s.x-s.vx*.12,s.y-s.vy*.12); ctx.stroke(); return true; });
+  ctx.globalAlpha=1;
+};
+
+/* =========================================================
+   Particle layers
+   ========================================================= */
+const SIZES={bubble:[6,18],candy:[7,12],gear:[8,15],star:[5,12],snow:[5,11],cloud:[12,24],ember:[3,6],firefly:[3,5],trail:[6,11],confetti:[5,8],balloon:[10,16],petal:[5,9],note:[8,13],drop:[4,7],heart:[7,12]};
+const GRAV={bubble:-160,candy:520,gear:480,star:120,snow:90,cloud:0,ember:-200,firefly:0,trail:0,confetti:380,balloon:-110,petal:60,note:-70,drop:520,heart:-90};
+const CONFETTI=['#ff5b7f','#ffd166','#7fe7d0','#7fb2ff','#b18cff','#ffffff'];
+const RISING=['bubble','ember','firefly','balloon','note','heart'];
+class FX {
+  constructor(canvas){ this.c=canvas; this.ctx=canvas.getContext('2d'); this.ps=[]; this.ambient=0; this.acc=0; this.type='star'; this.cols=['#fff']; this.dirty=false; this.spawner=null; }
+  make(type, x, y, vx, vy, scale=1, cols=this.cols){
+    return {t:type,x,y,vx,vy,r:rand(...SIZES[type])*scale*DPR,rot:rand(0,6.3),vr:rand(-3,3),age:0,max:rand(2.6,4.4),ph:rand(0,6.3),col:cols[(Math.random()*cols.length)|0]};
+  }
+  burst(type, n, cx, cy, opt={}){
+    const cols=opt.cols||this.cols, sp=opt.speed||[220,820];
+    for(let i=0;i<n;i++){ const a=rand(0,6.283), v=rand(...sp)*DPR;
+      const p=this.make(type,cx,cy,Math.cos(a)*v,Math.sin(a)*v - (opt.up??140)*DPR, rand(.9,1.5)*(opt.scale||1), cols);
+      if(opt.life) p.max=rand(...opt.life); this.ps.push(p); }
+  }
+  spawnAmbient(){
+    if(this.spawner){ const p=this.spawner(); if(p){p.amb=true;this.ps.push(p);} return; }
+    const W=this.c.width,H=this.c.height,t=this.type,p=this.make(t,0,0,0,0,.8);
+    p.max = rand(7,12);
+    if(RISING.includes(t)){ p.x=rand(0,W); p.y=H+20; p.vx=rand(-15,15)*DPR; p.vy=-rand(25,55)*DPR; }
+    else if(t==='cloud'){ p.x=W+60*DPR; p.y=rand(0,H*.4); p.vx=-rand(20,40)*DPR; p.vy=0; p.max=22; }
+    else { p.x=rand(0,W); p.y=-20; p.vx=rand(-12,12)*DPR; p.vy=rand(18,40)*DPR*(t==='drop'?4:1); }
+    p.amb=true; this.ps.push(p);
+  }
+  step(dt){
+    const {ctx,c}=this;
+    if(!this.ps.length && !this.ambient){ if(this.dirty){ctx.clearRect(0,0,c.width,c.height);this.dirty=false;} return; }
+    this.dirty=true;
+    this.acc += this.ambient*dt;
+    while(this.acc>1){ this.acc--; this.spawnAmbient(); }
+    ctx.clearRect(0,0,c.width,c.height);
+    const drag=Math.pow(.2,dt);
+    this.ps = this.ps.filter(p=>{
+      p.age+=dt; if(p.age>p.max) return false;
+      if(!p.amb){ p.vx*=drag; p.vy=p.vy*drag + GRAV[p.t]*DPR*dt; }
+      if(p.t==='firefly'||p.t==='snow'||p.t==='confetti'||p.t==='petal'){ p.vx += Math.sin(p.age*2+p.ph)*40*DPR*dt; }
+      p.x+=p.vx*dt; p.y+=p.vy*dt; p.rot+=p.vr*dt*(['snow','cloud','balloon','note','heart','drop'].includes(p.t)?.15:1); p.ph+=dt*6;
+      let a=Math.min(1,p.age/.2)*Math.min(1,(p.max-p.age)/.7);
+      if(p.amb) a*=p.soft??.55;
+      drawP(ctx,p,a); return true;
+    });
+    ctx.globalAlpha=1;
+  }
+}
+function starPath(ctx,r,k=.45){ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*k:r;ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}ctx.closePath();}
+function heartPath(ctx,r){ctx.beginPath();ctx.moveTo(0,r*.9);ctx.bezierCurveTo(-r*1.4,-r*.1,-r*.7,-r*1.1,0,-r*.4);ctx.bezierCurveTo(r*.7,-r*1.1,r*1.4,-r*.1,0,r*.9);ctx.closePath();}
+function drawP(ctx,p,a){
+  ctx.globalAlpha=Math.max(0,a); ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(['balloon','drop'].includes(p.t)?Math.sin(p.ph*.3)*.15:p.rot); const r=p.r;
+  const ol='rgba(43,29,82,.55)';
+  switch(p.t){
+    case 'bubble': ctx.beginPath();ctx.arc(0,0,r,0,6.283);ctx.fillStyle='rgba(255,255,255,.14)';ctx.fill();ctx.lineWidth=Math.max(1.5,r*.12);ctx.strokeStyle='rgba(255,255,255,.9)';ctx.stroke();
+      ctx.beginPath();ctx.arc(-r*.35,-r*.35,r*.22,0,6.283);ctx.fillStyle='#fff';ctx.fill();break;
+    case 'candy': ctx.fillStyle=p.col;ctx.strokeStyle=ol;ctx.lineWidth=r*.14;
+      for(const sgn of [1,-1]){ctx.beginPath();ctx.moveTo(sgn*r*.8,0);ctx.lineTo(sgn*r*1.75,-r*.7);ctx.lineTo(sgn*r*1.75,r*.7);ctx.closePath();ctx.fill();ctx.stroke();}
+      ctx.beginPath();ctx.arc(0,0,r,0,6.283);ctx.fill();ctx.stroke();
+      ctx.strokeStyle='#fff';ctx.lineWidth=r*.24;ctx.lineCap='round';ctx.beginPath();ctx.arc(0,0,r*.52,0,4);ctx.stroke();break;
+    case 'gear': { const N=8;ctx.beginPath();
+      for(let i=0;i<N;i++){const a0=i*6.283/N;[[r,-.2],[r*1.32,-.12],[r*1.32,.12],[r,.2]].forEach(([rr,o])=>ctx.lineTo(Math.cos(a0+o)*rr,Math.sin(a0+o)*rr));}
+      ctx.closePath();ctx.moveTo(r*.42,0);ctx.arc(0,0,r*.42,0,6.283,true);
+      ctx.fillStyle=p.col;ctx.fill('evenodd');ctx.strokeStyle='rgba(80,40,0,.55)';ctx.lineWidth=r*.1;ctx.stroke();break; }
+    case 'star': { const tw=.75+.25*Math.sin(p.ph); starPath(ctx,r*tw);ctx.fillStyle=p.col;ctx.fill();ctx.strokeStyle='rgba(40,20,80,.35)';ctx.lineWidth=r*.12;ctx.stroke();break; }
+    case 'snow': ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(1.4,r*.16);ctx.lineCap='round';
+      for(let k=0;k<3;k++){ctx.rotate(Math.PI/3);ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(r,0);
+        for(const s of [-1,1]){ctx.moveTo(s*r*.55,0);ctx.lineTo(s*r*.8,-r*.22);ctx.moveTo(s*r*.55,0);ctx.lineTo(s*r*.8,r*.22);}ctx.stroke();}break;
+    case 'cloud': ctx.fillStyle='rgba(255,255,255,.95)';ctx.beginPath();ctx.arc(-r*.6,r*.1,r*.5,0,6.283);ctx.arc(0,-r*.25,r*.7,0,6.283);ctx.arc(r*.65,r*.1,r*.48,0,6.283);ctx.fill();ctx.fillRect(-r*.6,0,r*1.25,r*.58);break;
+    case 'confetti': ctx.scale(Math.cos(p.ph*.8),1);ctx.fillStyle=p.col;ctx.fillRect(-r*.9,-r*.45,r*1.8,r*.9);break;
+    case 'balloon': ctx.strokeStyle=ol;ctx.lineWidth=1.2*DPR;ctx.beginPath();ctx.moveTo(0,r*1.1);ctx.quadraticCurveTo(r*.4,r*1.8,0,r*2.6);ctx.stroke();
+      ctx.fillStyle=p.col;ctx.beginPath();ctx.ellipse(0,0,r*.85,r*1.05,0,0,6.283);ctx.fill();ctx.lineWidth=r*.12;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*.18,r*1.2);ctx.lineTo(r*.18,r*1.2);ctx.lineTo(0,r*1.02);ctx.closePath();ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.ellipse(-r*.32,-r*.4,r*.18,r*.3,.4,0,6.283);ctx.fill();break;
+    case 'petal': ctx.scale(Math.cos(p.ph*.5),1);ctx.fillStyle=p.col;ctx.beginPath();ctx.ellipse(0,0,r,r*.55,0,0,6.283);ctx.fill();ctx.strokeStyle='rgba(200,80,120,.4)';ctx.lineWidth=1*DPR;ctx.stroke();break;
+    case 'note': ctx.fillStyle=p.col;ctx.strokeStyle=ol;ctx.lineWidth=r*.1;ctx.beginPath();ctx.ellipse(-r*.2,r*.55,r*.42,r*.3,-.4,0,6.283);ctx.fill();ctx.stroke();
+      ctx.fillRect(r*.12,-r*.9,r*.16,r*1.45);ctx.beginPath();ctx.moveTo(r*.28,-r*.9);ctx.quadraticCurveTo(r*.9,-r*.6,r*.6,-r*.1);ctx.lineWidth=r*.16;ctx.strokeStyle=p.col;ctx.stroke();break;
+    case 'drop': ctx.fillStyle=p.col;ctx.beginPath();ctx.moveTo(0,-r*1.3);ctx.quadraticCurveTo(r,0,0,r*.8);ctx.quadraticCurveTo(-r,0,0,-r*1.3);ctx.fill();ctx.fillStyle='rgba(255,255,255,.6)';ctx.beginPath();ctx.arc(-r*.25,0,r*.2,0,6.283);ctx.fill();break;
+    case 'heart': heartPath(ctx,r);ctx.fillStyle=p.col;ctx.fill();ctx.strokeStyle=ol;ctx.lineWidth=r*.12;ctx.stroke();break;
+    case 'trail': { const rr=r*(1-p.age/p.max)+.5, g=ctx.createRadialGradient(0,0,0,0,0,rr*2);
+      g.addColorStop(0,'#fffbe0');g.addColorStop(.35,'rgba(255,190,90,.8)');g.addColorStop(1,'rgba(255,120,60,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,rr*2,0,6.283);ctx.fill();break; }
+    case 'ember': case 'firefly': { const g=ctx.createRadialGradient(0,0,0,0,0,r*2.6);
+      const core=p.t==='ember'?'#fff3b0':'#f8ffb0', mid=p.t==='ember'?'rgba(255,140,40,.7)':'rgba(190,255,90,.6)';
+      g.addColorStop(0,core);g.addColorStop(.3,mid);g.addColorStop(1,'rgba(0,0,0,0)');
+      if(p.t==='firefly') ctx.globalAlpha*= .45+.55*Math.abs(Math.sin(p.ph*.4));
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,r*2.6,0,6.283);ctx.fill();break; }
+  }
+  ctx.restore();
+}
+const fxBook = new FX($('#fxBook')), fxIntro = new FX($('#fxIntro')), fxReader = new FX($('#fxReader'));
+const layers=[fxBook,fxIntro,fxReader];
+const GOLD=['#fff4c4','#ffd166','#ffffff','#ffb3dc'];
+function particleCols(st){ return {candy:['#ff9ccf','#7fe0d6','#ffe36b','#b18cff'],gear:['#ffd166','#e8ad3c','#f3e2a6'],star:['#fff4c4','#ffd166','#ffffff','#d9ccff'],balloon:CONFETTI,confetti:CONFETTI,note:['#ffffff','#ffd166','#7fe7d0'],drop:['#7fd4ff','#bfe9ff'],petal:st.colors[0]==='#fff4b8'?['#fff','#ffe36b','#ffb3cf']:['#ffc9dc','#ffffff','#ffb0c8']}[st.particle] || [st.colors[0],'#fff']; }
+function centerOf(el){ const r=el.getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2, r]; }
+
+/* =========================================================
+   Star title — particles swirl in and spell the name
+   ========================================================= */
+const TT={c:$('#fxTitle'),ps:[],t:0,phase:null,done:null};
+TT.start=async function(){
+  try{ await Promise.race([document.fonts.load('100px Lalezar'), new Promise(r=>setTimeout(r,1500))]); }catch(e){}
+  sizeCanvas(this.c); const W=this.c.width,H=this.c.height;
+  const off=document.createElement('canvas'); off.width=W; off.height=H; const o=off.getContext('2d');
+  const fs=Math.min(W*.14,H*.17);
+  o.font=`${fs}px Lalezar, Tahoma, sans-serif`; o.direction='rtl'; o.textAlign='center'; o.textBaseline='middle'; o.fillStyle='#fff';
+  o.fillText('حكايات قبل النوم', W/2, H*.44);
+  const d=o.getImageData(0,0,W,H).data, step=Math.max(3,Math.round(fs/26)); const pts=[];
+  for(let y=0;y<H;y+=step) for(let x=0;x<W;x+=step) if(d[(y*W+x)*4+3]>140) pts.push([x,y]);
+  for(let i=pts.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[pts[i],pts[j]]=[pts[j],pts[i]];}
+  this.ps=pts.slice(0,1700).map(([tx,ty])=>{const a=rand(0,6.283),R=Math.max(W,H)*rand(.55,.95); return {tx,ty,sx:W/2+Math.cos(a)*R,sy:H/2+Math.sin(a)*R,dl:rand(0,.8),r:rand(1,2.2)*DPR,col:GOLD[(Math.random()*4)|0],ph:rand(0,6.3)};});
+  this.t=0; this.phase=reduce?'hold':'form'; this.t2=0;
+  return new Promise(res=>this.done=res);
+};
+TT.go=function(){ if(this.phase!=='form'&&this.phase!=='hold') return; this.phase='go'; this.t=0; };
+TT.step=function(dt){
+  if(!this.phase) return;
+  const ctx=this.c.getContext('2d'), W=this.c.width,H=this.c.height; this.t+=dt; const t=this.t;
+  ctx.clearRect(0,0,W,H); ctx.globalCompositeOperation='lighter';
+  for(const p of this.ps){
+    let x,y,a=1,rr=p.r;
+    if(this.phase==='go'){
+      const k=Math.min(1,Math.max(0,(t-p.dl*.35)/.65)), e=k*k;
+      x=p.tx+(W/2-p.tx)*e; y=p.ty+(H/2-p.ty)*e; rr=p.r*(1-e*.5); a=1-e*.2;
+    } else {
+      const k=reduce?1:Math.min(1,Math.max(0,(t-p.dl)/1.3)), e=1-Math.pow(1-k,3), sw=(1-e)*2.4;
+      const dx=p.sx-W/2, dy=p.sy-H/2, cs=Math.cos(sw), sn=Math.sin(sw);
+      const rx=W/2+dx*cs-dy*sn, ry=H/2+dx*sn+dy*cs;
+      x=rx+(p.tx-rx)*e; y=ry+(p.ty-ry)*e; a=Math.min(1,k*3);
+      if(k>=1){ a=.7+.3*Math.sin(t*5+p.ph); x+=Math.sin(t*2+p.ph)*.6*DPR; }
+    }
+    ctx.globalAlpha=a; ctx.fillStyle=p.col; ctx.beginPath(); ctx.arc(x,y,rr,0,6.283); ctx.fill();
+  }
+  ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over';
+  if(this.phase==='form' && t>2.4){ this.phase='hold'; this.t2=t; }
+  if(this.phase==='hold' && t-this.t2>1.1) this.go();
+  if(this.phase==='go' && t>1){ this.phase=null; ctx.clearRect(0,0,W,H); this.done&&this.done(); }
+};
+
+/* =========================================================
+   Rocket
+   ========================================================= */
+const rk={el:$('#rocket'),mode:null,t:0,x:0,y:0,s:1,ang:0};
+function rocketStep(dt){
+  if(!rk.mode) return;
+  rk.t+=dt;
+  const [pcx,pcy]=centerOf($('#introPlanet')), W=innerWidth, H=innerHeight;
+  let x,y,s,ang;
+  if(rk.mode==='approach'){
+    const k=Math.min(1,rk.t/1.1), e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    const P0=[W*.12,H*1.15],P1=[W*.95,H*.5],P2=[pcx,pcy];
+    x=(1-e)*(1-e)*P0[0]+2*(1-e)*e*P1[0]+e*e*P2[0];
+    y=(1-e)*(1-e)*P0[1]+2*(1-e)*e*P1[1]+e*e*P2[1];
+    const dx=2*(1-e)*(P1[0]-P0[0])+2*e*(P2[0]-P1[0]), dy=2*(1-e)*(P1[1]-P0[1])+2*e*(P2[1]-P1[1]);
+    s=2*(1-e)+.35*e; ang=Math.atan2(dx,-dy);
+  } else {
+    const k=Math.min(1,rk.t/.45);
+    x=rk.x0+(pcx-rk.x0)*k; y=rk.y0+(pcy-rk.y0)*k; s=rk.s0*(1-k); ang=rk.ang+k*6;
+    if(k>=1){ rk.mode=null; rk.el.style.opacity=0; }
+  }
+  rk.x=x; rk.y=y; rk.s=s; rk.ang=ang;
+  rk.el.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%) rotate(${ang}rad) scale(${s})`;
+  if(rk.mode && !reduce){
+    const L=rk.el.offsetWidth*.62*s;
+    for(let i=0;i<2;i++){ const p=fxIntro.make('trail',(x-Math.sin(ang)*L)*DPR+rand(-3,3),(y+Math.cos(ang)*L)*DPR+rand(-3,3),-Math.sin(ang)*60*DPR,Math.cos(ang)*60*DPR,Math.max(.5,s)); p.max=rand(.4,.7); fxIntro.ps.push(p); }
+  }
+}
+
+let resizeT=0;
+function resizeAll(){ sizeCanvas(sky.c); layers.forEach(l=>sizeCanvas(l.c)); if(scene==='galaxy') updateStrip(); }
+addEventListener('resize', ()=>{ resizeAll(); clearTimeout(resizeT); resizeT=setTimeout(()=>{ if(worldSt && $('#world').classList.contains('on')){ buildWorld(worldSt); if(scene==='reader') setSleep(); } },250); });
+let last=performance.now();
+function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; sky.step(dt); TT.step(dt); rocketStep(dt); layers.forEach(l=>l.step(dt)); requestAnimationFrame(loop); }
+
+addEventListener('pointermove', e=>{
+  const mx=(e.clientX/innerWidth-.5)*2, my=(e.clientY/innerHeight-.5)*2;
+  document.documentElement.style.setProperty('--mx',mx.toFixed(3));
+  document.documentElement.style.setProperty('--my',my.toFixed(3));
+},{passive:true});
+
+/* ---------- Scenes ---------- */
+let scene='book';
+function show(id, instant){
+  $$('.scene').forEach(s=>{ s.classList.toggle('instant', !!instant); s.classList.toggle('on', s.id===id); });
+  scene = id==='bookScene'?'book':id;
+  if(instant) requestAnimationFrame(()=>$$('.scene').forEach(s=>s.classList.remove('instant')));
+  requestAnimationFrame(resizeAll);
+}
+function flash(color, ms=500, from=1, to=0){ const f=$('#flash'); f.style.background=color; return f.animate([{opacity:from},{opacity:to}],{duration:dur(ms),fill:'forwards',easing:'ease-out'}).finished; }
+function splitWords(el, text){ el.innerHTML=text.split(' ').map((w,i)=>`<span class="w" style="--i:${i}">${w}</span>`).join(' '); return [...el.querySelectorAll('.w')]; }
+
+let readSet = new Set();
+try{ readSet = new Set(JSON.parse(localStorage.getItem('bs-read')||'[]')); }catch(e){}
+function saveRead(){ try{ localStorage.setItem('bs-read', JSON.stringify([...readSet])); }catch(e){} }
+
+/* =========================================================
+   1. Book
+   ========================================================= */
+const book=$('#book'), bookIn=$('#bookIn');
+let bookOpened=false, bookReady=false;
+$('#popArt').innerHTML = (()=>{
+  const P=(x,y,s,inner)=>`<g transform="translate(${x} ${y}) scale(${s})"><g class="pop">${inner}</g></g>`;
+  return `<rect width="300" height="415" fill="#fff6e4"/>`+
+    P(0,415,1,`<path d="M0 0 V-70 Q70 -110 150 -80 Q230 -50 300 -95 V0Z" fill="#9fdc8a" stroke="${O}" stroke-width="4"/>`)+
+    P(232,150,1,`<circle cx="0" cy="-40" r="48" fill="#fff4c4" opacity=".45"/><path d="M8 -84a44 44 0 1 0 36 70a36 36 0 1 1 -36 -70z" fill="#ffd166" stroke="${O}" stroke-width="4"/><path d="M-14 -38q5 5 10 0" fill="none" stroke="${O}" stroke-width="3" stroke-linecap="round"/>`)+
+    P(70,160,.9,blob([[-30,-20,20],[0,-32,26],[30,-18,18]],'#ffffff'))+
+    P(46,392,.75,PROPS.tree('#6fcf5a'))+P(262,388,.62,PROPS.pine('#3f9a7a'))+P(152,382,.72,PROPS.house('#ffb3cf'))+
+    P(118,210,1,`<path d="M0 -12l3.5 8 8.5.7-6.5 5.5 2 8.3L0 5.8-7.5 10.5l2-8.3L-12 -3.3l8.5-.7z" fill="#ffd166" stroke="${O}" stroke-width="2"/>`)+
+    P(196,236,.7,`<path d="M0 -12l3.5 8 8.5.7-6.5 5.5 2 8.3L0 5.8-7.5 10.5l2-8.3L-12 -3.3l8.5-.7z" fill="#ffd166" stroke="${O}" stroke-width="2"/>`)+
+    P(150,86,1,`<text x="0" y="0" text-anchor="middle" font-family="Lalezar, Tahoma" font-size="40" fill="#8a5cf0" stroke="#fff6e4" stroke-width="8" paint-order="stroke">كان يا ما كان…</text>`);
+})();
+function bookEntrance(){
+  bookIn.style.visibility='visible';
+  fxBook.cols=GOLD;
+  const [cx,cy]=[innerWidth/2,innerHeight/2];
+  fxBook.burst('star',80,cx*DPR,cy*DPR,{speed:[300,1000],scale:.9});
+  flash('#fffbe8',600,.8,0);
+  bookIn.animate([
+    {transform:'scale(.05) rotate(40deg)'},
+    {transform:'scale(1.12) rotate(-6deg)',offset:.6},
+    {transform:'scale(.96) rotate(2deg)',offset:.8},
+    {transform:'none'}],{duration:dur(1200),easing:'cubic-bezier(.2,.8,.3,1)',fill:'backwards'});
+  book.animate([{transform:'rotateY(-200deg)'},{transform:'rotateY(14deg)',offset:.7},{transform:'rotateY(0)'}],{duration:dur(1200),easing:'ease-out',fill:'backwards'});
+  $('#tapHint').animate([{opacity:0,transform:'translateY(20px)'},{opacity:1,transform:'none'}],{duration:dur(600),delay:dur(1300),fill:'forwards'});
+  fxBook.spawner=()=>{ const r=book.getBoundingClientRect(); const p=fxBook.make('star',rand(r.left-40,r.right+40)*DPR,rand(r.top,r.bottom+20)*DPR,rand(-10,10)*DPR,-rand(18,45)*DPR,.45); p.max=rand(2.5,4.5); p.soft=.9; return p; };
+  setTimeout(()=>{ fxBook.ambient=7; $('#bookScene').classList.add('alive'); bookReady=true; },dur(1200));
+}
+async function openBook(){
+  if(bookOpened) return;
+  if(TT.phase){ TT.go(); return; }
+  if(!bookReady) return;
+  bookOpened=true;
+  const cover=$('#cover'), beams=$('#beams'), leaves=$$('.leafp'), E='cubic-bezier(.6,.05,.3,1)';
+  fxBook.ambient=0; $('#bookScene').classList.remove('alive');
+  $('.peek').animate([{opacity:1},{opacity:0}],{duration:200,fill:'forwards'});
+  $('#tapHint').animate([{opacity:1},{opacity:0,transform:'scale(.8)'}],{duration:300,fill:'forwards'});
+  book.parentElement.style.animation='none';
+  book.style.transition='none';
+  await book.animate([{transform:'none'},{transform:'scale(1.06,.93) translateY(12px)',offset:.35},{transform:'scale(.96,1.05) translateY(-34px)',offset:.7},{transform:'none'}],{duration:dur(560),easing:'ease-in-out'}).finished;
+  cover.animate([{transform:'translateZ(1px) rotateY(0deg)'},{transform:'translateZ(1px) rotateY(178deg)',offset:.82},{transform:'translateZ(1px) rotateY(170deg)'}],{duration:dur(1300),easing:E,fill:'forwards'});
+  book.animate([{transform:'translateX(0)'},{transform:'translateX(-50%)'}],{duration:dur(1300),easing:E,fill:'forwards'});
+  beams.animate([{opacity:0,transform:'scale(.3)'},{opacity:1,transform:'scale(1)'}],{duration:dur(1400),delay:dur(300),easing:'ease-out',fill:'forwards'});
+  await wait(700);
+  { const r=book.getBoundingClientRect(); fxBook.burst('star',60,(r.left+r.width*.25)*DPR,(r.top+r.height/2)*DPR,{speed:[200,650],scale:.8}); }
+  await wait(450);
+  leaves.forEach((lf,k)=>{ lf.style.visibility='visible';
+    lf.animate([{transform:'translateZ(.5px) rotateY(0deg)'},{transform:'translateZ(.5px) rotateY(174deg)'}],{duration:dur(600),delay:dur(k*100),easing:'cubic-bezier(.5,0,.35,1)',fill:'forwards'}); });
+  await wait(6*100+450);
+  // the pop-up scene springs out of the page
+  $$('#popArt .pop').forEach((el,k)=>el.animate([{transform:'scale(0) rotateX(80deg)'},{transform:'scale(1.25,1.3)',offset:.55},{transform:'scale(.92,.9)',offset:.78},{transform:'none'}],{duration:dur(700),delay:dur(k*110),easing:'ease-out',fill:'forwards'}));
+  await wait(9*110+500);
+  book.classList.add('lit');
+  { const [x,y]=centerOf(book.querySelector('.pages')); fxBook.burst('star',110,x*DPR,y*DPR,{speed:[300,1100],scale:1}); }
+  await wait(420);
+  book.animate([{transform:'translateX(-50%) scale(1) rotate(0)'},{transform:'translateX(0) scale(9) rotate(6deg)'}],{duration:dur(1500),easing:'cubic-bezier(.7,0,.25,1)',fill:'forwards'});
+  beams.animate([{transform:'scale(1)',opacity:1},{transform:'scale(3) rotate(40deg)',opacity:1}],{duration:dur(1500),easing:'ease-in',fill:'forwards'});
+  sky.target=2.4;
+  await wait(1050);
+  await flash('#fffbe8',380,0,1);
+  buildGalaxy();
+  show('galaxy', true);
+  galaxyEnter();
+  flash('#fffbe8',900,1,0);
+  await wait(500);
+  sky.target=.02;
+}
+$('#bookScene').addEventListener('click', openBook);
+book.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openBook(); }});
+
+/* =========================================================
+   2. Galaxy
+   ========================================================= */
+const strip=$('#strip');
+let built=false;
+const titleWords = splitWords($('#gTitle'), $('#gTitle').textContent);
+function buildGalaxy(){
+  if(!built){
+    strip.innerHTML = STORIES.map((s,i)=>`<button class="pcard" data-i="${i}" style="--pc:${s.colors[2]}" aria-label="${s.title}: ${s.tag}">
+      <span class="pinner"><span class="pwrap"><span class="phero"><svg viewBox="0 0 120 120" aria-hidden="true">${heroSVG(s.hero)}</svg></span><span class="pplanet">${planetSVG(s,'g'+i)}</span><span class="pread" hidden>قُرئت</span></span>
+      <span class="pname">${s.title}</span><span class="ptag">${s.tag}</span></span></button>`).join('');
+    built=true;
+  }
+  strip.querySelectorAll('.pcard').forEach((c,i)=>c.querySelector('.pread').hidden=!readSet.has(i));
+  $('#gfoot').innerHTML = readSet.size ? `زرتَ <b>${ar(readSet.size)}</b> من ${ar(STORIES.length)} كوكبًا` : `${ar(STORIES.length)} كوكبًا تنتظرك الليلة`;
+  requestAnimationFrame(updateStrip);
+}
+function galaxyEnter(){
+  titleWords.forEach((w,k)=>{ w.classList.remove('wave'); const a=w.animate([{opacity:0,transform:'translateY(-90px) scale(.3) rotate(-14deg)'},{opacity:1,transform:'translateY(10px) scale(1.12) rotate(4deg)',offset:.65},{opacity:1,transform:'none'}],{duration:dur(800),delay:dur(150+k*110),easing:'ease-out',fill:'backwards'});
+    a.finished.then(()=>w.classList.add('wave')).catch(()=>{}); });
+  [$('#gBrand'),$('#gSub'),$('#gfoot'),$('#gl'),$('#gr')].forEach((el,k)=>el.animate([{opacity:0},{opacity:1}],{duration:dur(600),delay:dur(500+k*120),fill:'backwards'}));
+  const sr=strip.getBoundingClientRect();
+  strip.querySelectorAll('.pcard').forEach((c,k)=>{ const r=c.getBoundingClientRect(); if(r.right<sr.left-50||r.left>sr.right+50) return;
+    c.animate([{opacity:0,transform:'translateY(-30vh) scale(0) rotate(-200deg)'},{opacity:1,transform:'translateY(4vh) scale(1.12) rotate(10deg)',offset:.65},{opacity:1,transform:'none'}],{duration:dur(1000),delay:dur(350+Math.abs(r.left+r.width/2-(sr.left+sr.width/2))/3),easing:'cubic-bezier(.2,.8,.3,1)',fill:'backwards'});
+    const hr=c.querySelector('.phero'); hr.animate([{transform:'translateY(-120px) scale(.2)',opacity:0},{transform:'translateY(0) scale(1.2,.8)',opacity:1,offset:.7},{transform:'none',opacity:1}],{duration:dur(700),delay:dur(1000+k%6*80),easing:'ease-out',fill:'backwards'}); });
+}
+function updateStrip(){
+  const sr=strip.getBoundingClientRect(), cx=sr.left+sr.width/2, W=sr.width||1;
+  strip.querySelectorAll('.pcard').forEach(c=>{
+    const r=c.getBoundingClientRect(), d=(r.left+r.width/2-cx)/W, ad=Math.min(Math.abs(d),1.2);
+    const inner=c.firstElementChild;
+    inner.style.transform=`translateY(${(d*d*140).toFixed(1)}px) scale(${(1.1-ad*.5).toFixed(3)}) rotate(${(d*8).toFixed(2)}deg)`;
+    inner.style.opacity=(1-ad*.55).toFixed(2);
+    c.classList.toggle('focus', Math.abs(d)<.12);
+  });
+}
+strip.addEventListener('scroll',()=>requestAnimationFrame(updateStrip),{passive:true});
+strip.addEventListener('wheel',e=>{ if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){ strip.scrollLeft-=e.deltaY; e.preventDefault(); } },{passive:false});
+function nudge(dir){ const w=strip.querySelector('.pcard').offsetWidth+6; strip.scrollBy({left:dir*w,behavior:reduce?'auto':'smooth'}); }
+$('#gl').onclick=()=>nudge(-1); $('#gr').onclick=()=>nudge(1);
+strip.addEventListener('click',e=>{ const c=e.target.closest('.pcard'); if(c) flyTo(+c.dataset.i, c); });
+
+/* =========================================================
+   3. Planet intro: rocket → plunge → cloud tunnel → world builds
+   ========================================================= */
+let token=0, skipResolve=null;
+function applyColors(el, st){ el.style.setProperty('--c1',st.colors[0]); el.style.setProperty('--c2',st.colors[1]); el.style.setProperty('--c3',st.colors[2]); el.style.setProperty('--bgc',st.bg); }
+const tunnel=$('#tunnel');
+tunnel.innerHTML=Array.from({length:18},()=>'<div class="puff"></div>').join('');
+function cloudTunnel(){
+  const R=Math.max(innerWidth,innerHeight);
+  $$('#tunnel .puff').forEach((p,k)=>{ const a=k/18*6.283+rand(-.2,.2), r0=rand(10,60), r1=R*rand(.8,1.2);
+    p.animate([{transform:`translate(${Math.cos(a)*r0}px,${Math.sin(a)*r0}px) scale(.4)`,opacity:0},{opacity:1,offset:.25},{transform:`translate(${Math.cos(a)*r1}px,${Math.sin(a)*r1}px) scale(3.4)`,opacity:0}],{duration:dur(rand(800,1200)),delay:dur(rand(0,300)),easing:'cubic-bezier(.3,0,.6,1)',fill:'backwards'}); });
+}
+async function flyTo(i, card){
+  if(scene!=='galaxy') return;
+  const st=STORIES[i], my=++token, intro=$('#intro');
+  if(card){ const inn=card.firstElementChild, hr=card.querySelector('.phero');
+    hr.animate([{transform:'none'},{transform:'translateY(-40px) rotate(-360deg) scale(1.2)'},{transform:'none'}],{duration:dur(500),easing:'ease-out'});
+    inn.animate([{transform:inn.style.transform},{transform:'scale(1.35,1.2) translateY(-10px)',offset:.4},{transform:'scale(.1) translateY(-40vh)',opacity:0}],{duration:dur(620),easing:'cubic-bezier(.5,0,.8,.4)'});
+    const [x,y]=centerOf(card); fxBook.burst('star',24,x*DPR,y*DPR,{speed:[150,500],scale:.7});
+    await wait(560); }
+  applyColors(intro, st); applyColors(reader, st);
+  const planet=$('#introPlanet'), title=$('#introTitle'), sub=$('#introSub'), speed=$('#speed'), space=$('#space'), ribbon=$('#ribbon');
+  planet.innerHTML=planetSVG(st,'in');
+  const words=splitWords(title, st.title);
+  sub.textContent=st.tag;
+  [planet,speed,space,sub,ribbon].forEach(el=>el.getAnimations().forEach(a=>a.cancel()));
+  space.style.opacity=1; planet.style.visibility='visible'; ribbon.style.opacity=0; sub.style.opacity=0;
+  fxIntro.ps=[]; fxIntro.ambient=0;
+  $('#world').classList.remove('on');
+  rk.mode='approach'; rk.t=0; rk.el.style.opacity=1;
+  show('intro', true);
+  let skipped=false;
+  const done = new Promise(r=>skipResolve=()=>{skipped=true;r();});
+  const seq = (async()=>{
+    sky.target=2.8;
+    speed.animate([{opacity:0},{opacity:.85}],{duration:dur(300),fill:'forwards'});
+    planet.animate([{transform:'scale(.03) rotate(-140deg)'},{transform:'scale(.8) rotate(0deg)'}],{duration:dur(1100),easing:'cubic-bezier(.3,0,.5,1)',fill:'forwards'});
+    await wait(1100); if(my!==token||skipped) return;
+    // plunge into the planet
+    rk.x0=rk.x; rk.y0=rk.y; rk.s0=rk.s; rk.mode='dive'; rk.t=0;
+    planet.animate([{transform:'scale(.8)'},{transform:'scale(.72) rotate(-8deg)',offset:.2},{transform:'scale(18) rotate(30deg)'}],{duration:dur(800),easing:'cubic-bezier(.6,0,.9,.4)',fill:'forwards'});
+    speed.animate([{opacity:.85},{opacity:0}],{duration:600,fill:'forwards'});
+    await wait(560); if(my!==token||skipped) return;
+    await flash(st.colors[0],240,0,1); if(my!==token||skipped) return;
+    // atmosphere: clouds rush past and the world builds itself
+    sky.target=.02; space.style.opacity=0; planet.style.visibility='hidden'; rk.mode=null; rk.el.style.opacity=0;
+    buildWorld(st, 250); $('#world').style.setProperty('--s',0); $('#world').classList.add('on');
+    cloudTunnel();
+    flash(st.colors[0],700,1,0);
+    await wait(1250); if(my!==token||skipped) return;
+    ribbon.animate([{opacity:0,transform:'translateY(-120px) scale(.3,.1) rotate(-8deg)'},{opacity:1,transform:'translateY(10px) scale(1.12,1.1) rotate(3deg)',offset:.6},{opacity:1,transform:'scale(.97) rotate(-1deg)',offset:.8},{opacity:1,transform:'none'}],{duration:dur(800),easing:'ease-out',fill:'forwards'});
+    words.forEach((w,k)=>{ const a=w.animate([
+      {opacity:0,transform:'translateY(50px) scale(0) rotate(-20deg)'},
+      {opacity:1,transform:'translateY(-14px) scale(1.3) rotate(6deg)',offset:.55},
+      {opacity:1,transform:'translateY(4px) scale(.94)',offset:.8},
+      {opacity:1,transform:'none'}],{duration:dur(650),delay:dur(250+k*150),easing:'ease-out',fill:'forwards'});
+      a.finished.then(()=>{ w.style.opacity=1; a.cancel(); w.classList.add('wave'); }).catch(()=>{}); });
+    sub.animate([{opacity:0,transform:'translateY(20px) scale(.4)'},{opacity:1,transform:'scale(1.1)',offset:.7},{opacity:1,transform:'none'}],{duration:dur(600),delay:dur(450+words.length*150),easing:'ease-out',fill:'forwards'});
+    setTimeout(()=>{ if(my!==token) return; const [x,y]=centerOf(ribbon); fxIntro.burst('confetti',80,x*DPR,y*DPR,{cols:CONFETTI,speed:[300,1000],up:200}); fxIntro.burst(st.particle,st.particle==='cloud'?16:40,x*DPR,y*DPR,{cols:particleCols(st)}); },dur(500));
+    fxIntro.type=st.particle; fxIntro.cols=particleCols(st); fxIntro.ambient=4;
+    await wait(3000); if(my!==token) return;
+  })();
+  await Promise.race([seq, done]);
+  if(my!==token) return;
+  skipResolve=null; fxIntro.ambient=0;
+  if(skipped){
+    rk.mode=null; rk.el.style.opacity=0; space.style.opacity=0; planet.style.visibility='hidden';
+    buildWorld(st); $('#world').classList.add('on');
+    await flash(st.colors[0],200,0,1);
+  } else {
+    ribbon.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateY(-160px) scale(.6) rotate(6deg)'}],{duration:dur(450),easing:'ease-in',fill:'forwards'});
+    sub.animate([{opacity:1},{opacity:0,transform:'translateY(-40px)'}],{duration:dur(300),fill:'forwards'});
+    await wait(380);
+  }
+  if(my!==token) return;
+  openReader(i);
+  fxIntro.ps=[];
+  if(skipped) flash(st.colors[0], 700, 1, 0);
+}
+function skipIntro(){ if(skipResolve) skipResolve(); }
+$('#skip').onclick=skipIntro;
+
+/* =========================================================
+   4. Reader
+   ========================================================= */
+let cur=0, pg=0, busy=false;
+const reader=$('#reader'), leaf=$('#leaf'), page=$('#page'), slot=$('#bunnySlot'), bubble=$('#bubble');
+const CHAT=['رائع!','وماذا حدث بعد ذلك؟','أحببتُ هذا!','أكمل، أكمل!','يا سلام!','هذا مضحك!'];
+const TAPS=['هههه! هذا يُدغدغني','أحبّ الحكايات!','أكمل القراءة من فضلك','لستُ نعسانًا بعد!'];
+const ACTS=['wave','jump','surprise','spin','stretch'];
+function leafHTML(st,p){
+  const n=st.pages.length, lastPg=p===n-1, ws=st.pages[p].split(' ');
+  const txt=ws.map((w,k)=>`<span class="wd${p===0&&k===0?' big':''}" style="--i:${k}">${w}</span>`).join(' ');
+  return `<div class="leaf-head"><span class="leaf-mini"><svg viewBox="0 0 120 120" aria-hidden="true">${heroSVG(st.hero)}</svg></span><span class="leaf-pg">صفحة ${ar(p+1)}</span><span class="leaf-rule"></span></div>
+    <p class="txt" style="--n:${ws.length}">${txt}</p>
+    ${lastPg?`<div class="the-end" style="--n:${ws.length}">النهاية</div><p class="end-hint" style="--n:${ws.length}">هُسسس… أرنوب نام بعمق. المس الأرنب النائم لتعود إلى الكواكب.</p>`:''}`;
+}
+function setSleep(){
+  const n=STORIES[cur].pages.length, s=pg/(n-1);
+  reader.style.setProperty('--s', s.toFixed(3));
+  $('#world').style.setProperty('--s', s.toFixed(3));
+  const asleep = pg===n-1;
+  slot.classList.toggle('asleep', asleep);
+  $('#zzz').dataset.l = asleep?3 : s>=.75?2 : s>=.55?1 : 0;
+  slot.setAttribute('aria-label', asleep?'أرنوب نائم. المسه لتعود إلى الكواكب':'أرنوب');
+  const h=heroEl(); if(h){ h.classList.toggle('sleepy', s>=.6 && !asleep); h.classList.toggle('sleep', asleep); }
+}
+function updateChrome(){
+  const st=STORIES[cur], n=st.pages.length;
+  $('#rCount').textContent=`${ar(pg+1)} / ${ar(n)}`;
+  $('#prev').disabled=pg===0; $('#next').disabled=pg===n-1;
+  $('#dots').innerHTML=st.pages.map((_,k)=>`<i class="${k===pg?'on':k<pg?'done':''}"></i>`).join('');
+}
+function say(text, ms=2600){ bubble.textContent=text; bubble.classList.remove('show'); void bubble.offsetWidth; bubble.classList.add('show'); clearTimeout(say.t); say.t=setTimeout(()=>bubble.classList.remove('show'),ms); }
+function hop(big){ slot.animate([{transform:'none'},{transform:'translateY(4px) scale(1.06,.92)',offset:.2},{transform:`translateY(${big?-34:-18}px) scale(.96,1.05)`,offset:.5},{transform:'translateY(2px) scale(1.05,.95)',offset:.8},{transform:'none'}],{duration:dur(620),easing:'ease-out'}); }
+function pawWave(){ slot.classList.remove('pawwave'); void slot.offsetWidth; slot.classList.add('pawwave'); setTimeout(()=>slot.classList.remove('pawwave'),1700); }
+// Arnoob looks around while awake
+setInterval(()=>{ if(scene!=='reader'||slot.classList.contains('asleep')) return; const s=pg/(STORIES[cur].pages.length-1);
+  $('#bLook').style.transform=`translate(${rand(-3,3).toFixed(1)}px,${rand(-2,1.5).toFixed(1)}px)`;
+  if(Math.random()<.18 && s<.5) pawWave(); },2200);
+function openReader(i){
+  cur=i; pg=0; const st=STORIES[i];
+  applyColors(reader, st);
+  $('#rTitle').textContent=st.title;
+  leaf.classList.remove('static'); leaf.style.setProperty('--d0','800ms');
+  leaf.innerHTML=leafHTML(st,0); leaf.scrollTop=0;
+  setSleep(); updateChrome();
+  show('reader', true);
+  sky.target=.006;
+  fxReader.ps=[]; fxReader.type=st.particle; fxReader.cols=particleCols(st); fxReader.ambient=st.particle==='cloud'?.25:1.1;
+  page.animate([{opacity:0,transform:'translateY(60vh) rotateX(-35deg) scale(.7)'},{opacity:1,transform:'translateY(-14px) rotateX(6deg) scale(1.02)',offset:.7},{opacity:1,transform:'none'}],{duration:dur(950),delay:dur(100),easing:'cubic-bezier(.2,.8,.3,1)',fill:'backwards'});
+  slot.animate([{opacity:0,transform:'translate(-120%,-90px) rotate(-25deg)'},{opacity:1,transform:'translate(0,-50px) rotate(10deg)',offset:.55},{opacity:1,transform:'translate(0,0) scale(1.12,.88)',offset:.8},{opacity:1,transform:'none'}],{duration:dur(900),delay:dur(800),easing:'ease-out',fill:'backwards'});
+  $('#rHead').animate([{opacity:0,transform:'translateY(-40px)'},{opacity:1,transform:'none'}],{duration:dur(600),delay:dur(300),easing:'ease-out',fill:'backwards'});
+  $('#rNav').animate([{opacity:0,transform:'translateY(40px)'},{opacity:1,transform:'none'}],{duration:dur(600),delay:dur(450),easing:'ease-out',fill:'backwards'});
+  setTimeout(()=>{ if(scene==='reader'&&cur===i&&pg===0){ say('اقرأ لي حكاية!'); pawWave(); } },dur(1900));
+}
+async function turn(dir){
+  const st=STORIES[cur], n=st.pages.length, np=pg+dir;
+  if(busy||np<0||np>=n) return;
+  busy=true;
+  const flip=document.createElement('div'); flip.className='flip static';
+  const D=dur(850), E='cubic-bezier(.45,.05,.3,1)';
+  leaf.style.setProperty('--d0','250ms');
+  if(dir>0){
+    flip.innerHTML=leaf.innerHTML; page.insertBefore(flip, slot);
+    pg=np; leaf.classList.remove('static'); leaf.innerHTML=leafHTML(st,pg); leaf.scrollTop=0;
+    await flip.animate([{transform:'rotateY(0deg)'},{transform:'rotateY(180deg)'}],{duration:D,easing:E,fill:'forwards'}).finished;
+  } else {
+    pg=np; flip.innerHTML=leafHTML(st,pg); page.insertBefore(flip, slot);
+    await flip.animate([{transform:'rotateY(180deg)'},{transform:'rotateY(0deg)'}],{duration:D,easing:E,fill:'forwards'}).finished;
+    leaf.classList.add('static'); leaf.innerHTML=flip.innerHTML; leaf.scrollTop=0;
+  }
+  flip.remove();
+  setSleep(); updateChrome();
+  const s=pg/(n-1), pr=page.getBoundingClientRect();
+  fxReader.burst('star',14,(dir>0?pr.right-10:pr.left+10)*DPR,(pr.top+pr.height*.4)*DPR,{cols:['#fff','#ffd166'],speed:[100,380],scale:.55});
+  worldGust();
+  if(dir>0){
+    if(pg<n-1) heroAct(ACTS[(pg-1)%ACTS.length]);
+    if(s<.6) hop(s<.3);
+    if(s>.2 && s<.99){ slot.classList.remove('yawn'); void slot.offsetWidth; slot.classList.add('yawn'); setTimeout(()=>slot.classList.remove('yawn'),1800); }
+    if(pg===n-2) say('كِدتُ… أنام…',2200);
+    else if(s<.6 && Math.random()<.7) setTimeout(()=>say(CHAT[(Math.random()*CHAT.length)|0],2000),dur(700));
+  }
+  if(pg===n-1){ readSet.add(cur); saveRead(); bubble.classList.remove('show'); }
+  busy=false;
+}
+$('#next').onclick=()=>turn(1); $('#prev').onclick=()=>turn(-1);
+function bunnyTap(){
+  const n=STORIES[cur].pages.length;
+  if(pg===n-1) goHome();
+  else { slot.classList.remove('wiggle'); void slot.offsetWidth; slot.classList.add('wiggle'); hop(true);
+    const [x,y]=centerOf(slot); fxReader.burst('heart',10,x*DPR,(y-30)*DPR,{cols:['#ff6f8f','#ffb3cf','#ff8fb1'],speed:[100,300],up:120,scale:.8});
+    say(pg>=n-3?'بضع صفحات أخرى…':TAPS[(Math.random()*TAPS.length)|0]); }
+}
+slot.addEventListener('click', bunnyTap);
+slot.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); bunnyTap(); }});
+let sx=null;
+page.addEventListener('pointerdown',e=>{ if(!e.target.closest('.bunny-slot')) sx=e.clientX; });
+page.addEventListener('pointerup',e=>{ if(sx===null) return; const dx=e.clientX-sx; sx=null; if(Math.abs(dx)>50) turn(dx>0?1:-1); });
+
+async function goHome(){
+  if(scene!=='reader') return;
+  fxReader.ambient=0; token++;
+  const [x,y]=centerOf(slot);
+  fxReader.burst('star',40,x*DPR,y*DPR,{cols:GOLD,speed:[200,700],scale:.8});
+  sky.target=1.4;
+  await flash('#fffbe8',350,0,1);
+  $('#world').classList.remove('on');
+  buildGalaxy();
+  show('galaxy', true);
+  const next = STORIES.findIndex((_,k)=>!readSet.has(k));
+  const target = strip.children[next>=0?next:cur];
+  if(target){ const sr=strip.getBoundingClientRect(), r=target.getBoundingClientRect(); strip.scrollBy({left:(r.left+r.width/2)-(sr.left+sr.width/2)}); }
+  galaxyEnter();
+  flash('#fffbe8',800,1,0);
+  await wait(600); sky.target=.02; fxReader.ps=[];
+}
+$('#back').onclick=goHome;
+
+addEventListener('keydown',e=>{
+  if(scene==='reader'){ if(e.key==='ArrowLeft') turn(1); else if(e.key==='ArrowRight') turn(-1); else if(e.key==='Escape') goHome(); }
+  else if(scene==='galaxy'){ if(e.key==='ArrowLeft') nudge(-1); else if(e.key==='ArrowRight') nudge(1); }
+  else if(scene==='intro' && (e.key==='Escape'||e.key===' ')) skipIntro();
+});
+
+resizeAll(); requestAnimationFrame(loop);
+TT.start().then(bookEntrance);
+</script>
+
+</body>
+</html>

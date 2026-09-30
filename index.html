@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c0a26">
 <title>Bedtime Stories</title>
 <script>document.documentElement.lang='ar';document.documentElement.dir='rtl';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,7 +26,7 @@
   direction:rtl;
 }
 html,body{height:100%;overflow:hidden}
-body{background:var(--night);color:var(--star);font-family:var(--body);-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+body{background:var(--night);color:var(--star);font-family:var(--body);touch-action:manipulation;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outline-offset:4px;border-radius:12px}
 
@@ -164,7 +165,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 .g-sub{margin:0;color:var(--muted);font-size:clamp(1rem,2vw,1.15rem)}
 .strip-wrap{position:relative;z-index:2;min-height:0;min-width:0;display:flex;align-items:center}
 .strip{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;width:100%;height:100%;align-items:center;
-  scroll-snap-type:x proximity;scrollbar-width:none;padding-inline:calc(50% - var(--cw)/2);--cw:min(260px,62vw)}
+  scroll-snap-type:x proximity;scrollbar-width:none;padding-inline:calc(50% - var(--cw)/2);--cw:min(260px,56vw)}
 .strip::-webkit-scrollbar{display:none}
 .pcard{flex:0 0 var(--cw);scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;padding:34px 0 10px;border-radius:24px}
 .pinner{width:100%;display:flex;flex-direction:column;align-items:center;gap:4px;transition:transform .25s ease-out,opacity .25s;will-change:transform}
@@ -361,6 +362,15 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outl
 
 @media (max-width:560px){
   .garrow{width:42px;height:42px}
+  .r-main{place-items:start center;padding-top:2px}
+  .page{height:min(60vh,500px)}
+  .leaf,.flip{padding:18px 20px 112px}
+  .txt{font-size:1.14rem;line-height:1.8}
+  .bunny-slot{width:min(210px,58%)}
+  .r-nav{gap:14px;padding-bottom:max(12px,2vh)}
+  .intro-title{font-size:1.9rem}
+  .ribbon .tail{font-size:1.1rem}
+  .ribbon-wrap{padding:0 34px}
   .r-count{min-width:0}
   .pill .lbl{display:none}
   .navb{width:52px;height:52px}
@@ -966,7 +976,8 @@ function buildWorld(st, enterDelay=null){
   s+=flyer(w.extras.includes('bees'))+flyer(w.extras.includes('bees'));
   if(w.extras.includes('bees')) s+=flyer(true);
   // hero
-  s+=`<g transform="translate(${(W*.8).toFixed(0)} 600) scale(1.35)"><g class="w-hero"><g transform="translate(-60 -114)">${heroSVG(st.hero)}</g></g></g>`;
+  const portrait=innerWidth/innerHeight<.8;
+  s+=`<g transform="translate(${(W*(portrait?.72:.8)).toFixed(0)} ${portrait?652:600}) scale(${portrait?1.1:1.35})"><g class="w-hero"><g transform="translate(-60 -114)">${heroSVG(st.hero)}</g></g></g>`;
   s+=`</g>`;
   if(w.extras.includes('petals')) s+=Array.from({length:14},()=>`<g transform="translate(${R(0,W+200).toFixed(0)} 0)"><ellipse class="w-petal" style="animation-duration:${R(8,14).toFixed(1)}s;animation-delay:-${R(0,14).toFixed(1)}s" cx="0" cy="0" rx="7" ry="4.5" fill="#ffc9dc" stroke="#e98fae" stroke-width="1.5"/></g>`).join('');
   s+=`<path class="w-landnight" d="${farD}" fill="#0a0930"/>`;
